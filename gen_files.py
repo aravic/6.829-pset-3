@@ -8,11 +8,14 @@ parser.add_argument("--dash-root",
         type=str,
         required=True,
         help="The root of the DASH video tree, should contain Manifest.mpd")
-parser.add_argument("--out",
+parser.add_argument("--index-tmpl",
         type=str,
-        required=True,
-        help="The file to which to write the video trace to")
+        default="index.html.tmpl",
+        help="Location of the index.html template")
 args = parser.parse_args()
+
+TRACE_OUT = os.path.join(args.dash_root, "trace.dat")
+INDEX_OUT = os.path.join(args.dash_root, "index.html")
 
 def params_from_manifest(manifest_file):
     tree = ET.parse(os.path.join(args.dash_root, 'Manifest.mpd'))
@@ -54,12 +57,33 @@ def get_chunk_sizes(dash_root, bws, tmpl):
         all_chunk_sizes.append(chunk_sizes)    
     return all_chunk_sizes
 
-with open(args.out, 'w') as w:
-    xml_dict = params_from_manifest(args.dash_root)
-    w.write(str(xml_dict['chunk_duration']) + '\n')
-    w.write(' '.join([str(b / 1024) for b in xml_dict['bws']]) + '\n')
-    cs = get_chunk_sizes(args.dash_root, xml_dict['bws'], xml_dict['url'])
-    min_len = min([len(c) for c in cs])
-    for i in range(min_len):
-        w.write(' '.join([str(c[i]) for c in cs]) + '\n')
+def write_trace(xml_dict):
+    with open(TRACE_OUT, 'w') as w:
+        w.write('size %d\n' % (1000 * xml_dict['chunk_duration']))
+        w.write('bitrates %s\n' % ' '.join([str(b / 1024) for b in xml_dict['bws']]))
+        cs = get_chunk_sizes(args.dash_root, xml_dict['bws'], xml_dict['url'])
+        min_len = min([len(c) for c in cs])
+        for i in range(min_len):
+            w.write(' '.join([str(c[i]) for c in cs]) + '\n')
+
+def write_tmpl(xml_dict):
+    name = args.dash_root.rstrip('/').split('/')[-1]
+    # Round up to the nearest Mbps
+    max_y1 = 1 + max(xml_dict['bws']) / 1000 / 1000
+    params = {
+            "$NAME$": name,
+            "$MAX_Y1$": str(max_y1),
+            }
+    fr = open(args.index_tmpl)
+    tmpl_str = fr.read()
+    fr.close()
+    for k, v in params.iteritems():
+        tmpl_str = tmpl_str.replace(k, v)
+    fw = open(INDEX_OUT, 'w')
+    fw.write(tmpl_str)
+    fw.close()
+
+xml_dict = params_from_manifest(args.dash_root)
+write_trace(xml_dict)
+write_tmpl(xml_dict)
 

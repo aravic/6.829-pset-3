@@ -25,8 +25,6 @@ class Video(object):
         self.chunks = []
         for line in f.read().splitlines():
             brs = [float(x) for x in line.strip().split()]
-            # Make sure chunk sizes are sorted high to low.
-            assert sorted(brs, reverse=True) == brs
             # But store them in ascending order to match bitrates, and convert
             # them to Mb instead of Bytes.
             self.chunks.append([8.0*b/1000.0/1000.0 for b in sorted(brs)])
