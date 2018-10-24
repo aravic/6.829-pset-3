@@ -11,7 +11,10 @@ parser.add_argument("--mm-log",
         type=str,
         required=True,
         help="Mahimahi log to tail")
-
+parser.add_argument("--port",
+        type=int,
+        default=8083,
+        help="Port to listen on")
 args = parser.parse_args()
 
 def make_request_handler(params):
@@ -24,8 +27,8 @@ def make_request_handler(params):
         def do_GET(self):
             # Parse all the lines from stdout.
             tot_bytes = 0
-            while True:
-                line = params["f"].stdout.readline():
+            while params["poll"].poll(1):
+                line = params["proc"].stdout.readline()
                 if line:
                     if '#' in line:
                         tot_bytes += 1504
@@ -33,6 +36,7 @@ def make_request_handler(params):
                     break
             t = time.time()
             delta = t - params["t"]
+            # Convert to kbps
             cap = str(int(8. * tot_bytes / delta / 1024))
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
@@ -43,4 +47,29 @@ def make_request_handler(params):
             params["t"] = t
 
     return RequestHandler
+
+def run():
+    proc = subprocess.Popen(["tail", "-F", args.mm_log],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    p = select.poll()
+    p.register(proc.stdout)
+    params = {
+        "proc": proc,
+        "poll": p,
+        "last_t": time.time(),
+        }
+    handler_class = make_request_handler(params)
+    server_address = ("127.0.0.1", args.port)
+    httpd = HTTPServer(server_address, handler_class)
+    httpd.server_forever()
+
+if __name__ == "__main__":
+    try:
+        run()
+    except KeyboardInterrupt:
+        print("Keyboard interrupted.")
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
 

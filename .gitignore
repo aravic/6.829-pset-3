@@ -1,4 +1,4 @@
 *.pyc
 __pycache__
-server/data/videos
+server/data/videos/*
 
