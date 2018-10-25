@@ -2,7 +2,7 @@ import sys
 import os
 import argparse
 import subprocess
-import shutil 
+import shutil
 
 parser = argparse.ArgumentParser("Main Experiment")
 parser.add_argument("--mm-trace",
@@ -60,7 +60,7 @@ def start_mm_cmd():
 # One side-effect of using Mahimahi is that you all requests to localhost or 127.0.0.1
 # are redirected to within the link shell and can't reach any server running outside.
 # To solve this, we could use the host's public IP address, but a simpler option is to
-# create a virtual IP address on the public-facing interface. 
+# create a virtual IP address on the public-facing interface.
 def setup_virtual_ip():
     ifname = "eth0"
     ret = os.system("sudo ifconfig %s:0 %s > /dev/null 2>&1" % (ifname, IP_ADDR))
@@ -126,7 +126,7 @@ def parse_abr_log():
 
 def start_all():
     if not os.path.isdir("logs/"):
-        os.makdedirs("logs/")
+        os.makedirs("logs/")
     convert_mm_trace(args.mm_trace, CONV_MM_TRACE, 500)
     ifname = setup_virtual_ip()
     server_proc = start_video_server()
@@ -136,7 +136,7 @@ def start_all():
     teardown_virtual_ip(ifname)
     parse_abr_log()
     os.system("sudo killall python python3 2> /dev/null")
-    
+
 start_all()
 
 
