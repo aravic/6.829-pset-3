@@ -54,7 +54,8 @@ def run():
             continue
         first_ms = int(line.strip().split()[0])
         mm_ms -= first_ms
-
+        break
+    print 'Start ms = %d, mm_offset = %d' % (start_ms, mm_ms)
     # This is the system time corresponding to time 0 on the trace.
     time_offset = start_ms - mm_ms
     data = []
@@ -67,7 +68,7 @@ def run():
     params = {
         "data": data_str,
         }
-    print "Data length = %d" % len(data_str)
+    print data_str
     handler_class = make_request_handler(params)
     server_address = ("127.0.0.1", args.port)
     httpd = HTTPServer(server_address, handler_class)

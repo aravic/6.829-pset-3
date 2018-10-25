@@ -22,7 +22,7 @@ def scale_trace(trace_in, trace_out, scale=1.0):
     with open(trace_out, 'w') as w:
         for line in open(trace_in):
             num_packets += 1.0
-            if num_packets >= 1.0/scale:
+            while num_packets >= 1.0/scale:
                 w.write(line)
                 num_packets -= 1.0/scale
 
@@ -33,6 +33,6 @@ def trace_with_target(trace_in, trace_out, target_rate_Mbps):
     avg = avg_throughput_Mbps(trace_in)
     scale = target_rate_Mbps/avg
     print 'Avg throughput %f, scaling by %f' % (avg, scale)
-    scale_trace(trace_in, trace_out, scale=scale)
+    #scale_trace(trace_in, trace_out, scale=scale)
 
 trace_with_target(sys.argv[1], sys.argv[2], float(sys.argv[3]))

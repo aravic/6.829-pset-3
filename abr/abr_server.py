@@ -95,8 +95,8 @@ def make_request_handler(params):
                 qoe = client_dict["objective"].qoe_first_chunk(
                         vid.get_bitrates()[next_quality], rebuf_sec)
 
-            client_dict["qoe_log"].write('%d\t%f\t%f\n' % \
-                    (chunk_ix, rebuf_sec, qoe))
+            client_dict["qoe_log"].write('%d\t%d\t%f\t%f\n' % \
+                    (chunk_ix, vid.get_bitrates()[next_quality], rebuf_sec, qoe))
             client_dict["qoe_log"].flush()
 
             end_of_video = False

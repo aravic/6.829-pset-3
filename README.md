@@ -44,7 +44,7 @@ where:
  - R(e_0) is the delay between loading the video player and playing the first chunk
  - R(e_i) for i > 0 is the rebuffering time required to play the i-th chunk
  - a is the rebuffering penalty, which is set to 25. This means that rebuffering for 4 seconds negates the value of playing a single high-quality chunk.
- - b is the smoothness penalty, which is set to 0.5.
+ - b is the smoothness penalty, which is set to 1.
  - c is the startup delay, which is 5.
  
 You must fill out the `next_quality(..)` function in the `ABR` class.
