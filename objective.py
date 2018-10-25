@@ -40,7 +40,7 @@ class Objective:
         pq_prev = self._perceptual_qualities[prev_bitrate]
         return pq_cur \
                 - self._rebuf_penalty * rebuf_sec \
-                - self._smooth_penalty(abs(pq_prev - pq_cur))
+                - self._smooth_penalty * (abs(pq_prev - pq_cur))
 
     # Computes the QoE for the first chunk in a video, given:
     # - `cur_bitrate`: the bitrate of the first chunk

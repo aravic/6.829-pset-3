@@ -21,7 +21,7 @@ parser.add_argument("--video",
         help="video to play (must match directory under server/videos")
 parser.add_argument("--startup-penalty",
         type=float,
-        default=1.0,
+        default=5.0,
         help="Penalty to QoE for each second spent in startup")
 parser.add_argument("--rebuffer-penalty",
         type=float,
@@ -29,13 +29,17 @@ parser.add_argument("--rebuffer-penalty",
         help="Penalty to QoE for each second spent rebuffering")
 parser.add_argument("--smooth-penalty",
         type=float,
-        default=10.0,
+        default=1.0,
         help="Penalty to QoE for smoothness changes in bitrate")
 parser.add_argument("--max-chunks",
         type=int,
         default=-1,
         help="Maximum number of chunks to watch before killing this server." \
             + " If negative, there is no limit")
+parser.add_argument("--qoe-log",
+        type=str,
+        default="",
+        help="Where to log the ABR QoE scores")
 args = parser.parse_args()
 
 def make_request_handler(params):
@@ -58,14 +62,16 @@ def make_request_handler(params):
                 sys.exit(0)
             client_dict = params["client_dict"]
             vid = client_dict["video"]
-            rebuffer_time = float(post_data['RebufferTime'] - client_dict['last_total_rebuf'])
+            rebuffer_time = float(post_data['RebufferTime']) - client_dict['last_total_rebuf']
+            client_dict['last_total_rebuf'] = float(post_data['RebufferTime'])
             fetch_time_ms = post_data['lastChunkFinishTime'] - post_data['lastChunkStartTime']
             prev_br = vid.get_bitrates()[post_data['lastquality']]
             prev_chunk_rate = 0 if fetch_time_ms <= 0 else post_data['lastChunkSize'] * MILLI / fetch_time_ms
             chunk_ix = post_data['lastRequest'] + 1
+            rebuf_sec = rebuffer_time / MILLI
             abr_input = {
                 "chunk_index": chunk_ix,
-                "rebuffer_sec": rebuffer_time / MILLI,
+                "rebuffer_sec": rebuf_sec,
                 "download_rate": prev_chunk_rate,
                 "buffer_sec": post_data['buffer'],
             }
@@ -80,6 +86,17 @@ def make_request_handler(params):
                     "refresh": False,
                     "quality": next_quality,
             }
+            qoe = client_dict["objective"].qoe(vid.get_bitrates()[next_quality],
+                                            prev_br,
+                                            rebuf_sec)
+            if chunk_ix == 0:
+                # For first chunk, just count startup delay
+                qoe = client_dict["objective"].qoe_first_chunk(
+                        vid.get_bitrates()[next_quality], rebuf_sec)
+
+            client_dict["qoe_log"].write('%d\t%f\t%f\n' % \
+                    (chunk_ix, rebuf_sec, qoe))
+            client_dict["qoe_log"].flush()
 
             end_of_video = False
             if ( chunk_ix == vid.num_chunks() ):
@@ -117,7 +134,7 @@ def run(server_class=HTTPServer, port=8333):
     vid = video.Video(video_file)
     pqs = vid.get_bitrates()
     max_pq = max(pqs)
-    pqs = [float(q) / max_pq for q in pqs]
+    pqs = [100 * float(q) / max_pq for q in pqs]
     
     pq_dict = {}
     for br, pq in zip(vid.get_bitrates(), pqs):
@@ -133,12 +150,15 @@ def run(server_class=HTTPServer, port=8333):
     vid_client = copy.deepcopy(vid)
     abr_alg = abr.AbrAlg(vid_client, obj_client)
     
+    qoelog = open(args.qoe_log, 'w') if len(args.qoe_log) > 0 else sys.stdout
+    
     params = {
         "client_dict": {
             "video": video.Video(video_file),
             "abr": abr_alg,
             "objective": obj,
             "last_total_rebuf": 0,
+            "qoe_log": qoelog, 
             }
         }
     handler_class = make_request_handler(params)

@@ -18,8 +18,15 @@ curdir = os.getcwd()
 keyfile = os.path.join(curdir, 'server/newplainkey.pem')
 certfile = os.path.join(curdir, 'server/newcert.pem')
 
+class PersistentHTTPRequestHandler(SimpleHTTPRequestHandler):
+    protocol_version = 'HTTP/1.1'
+
+    def __init__(self, *args, **kwargs):
+        SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
+
+
 os.chdir(os.path.join(curdir, 'server/data'))
-httpd = HTTPServer((args.host, args.port), SimpleHTTPRequestHandler)
+httpd = HTTPServer((args.host, args.port), PersistentHTTPRequestHandler)
 #httpd.socket = ssl.wrap_socket (httpd.socket, keyfile=keyfile,
 #        certfile=certfile,
 #        server_side=True)
