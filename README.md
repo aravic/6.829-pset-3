@@ -49,7 +49,7 @@ where:
  
 You must fill out the `next_quality(..)` function in the `ABR` class.
 Read the comments in `abr.py`, `video.py`, and `objective.py` to understand what information is available to you. You may use
-this information however you'd like in your ABR algorithm.
+this information however you'd like in your ABR algorithm. Anything you print will appear in `logs/abr_server.log`
 
 ## Setup
 
