@@ -29,7 +29,7 @@ current buffer level (blue). The ABR server logs the QoE information and display
 
 ### Your task
 
-You will only have to modify `abr.py`, a class that implements an ABR algorithm.
+You will only have to modify `abr.py`, the class that implements your ABR algorithm.
 
 This class is instantiated with the ABR server and has access to both a `Video` and `Objective` object. The `Video` gives you
 information about the videos available bitrates and chunk sizes for all video chunks. The `Objective` is your interface to the
@@ -47,7 +47,7 @@ where:
  - b is the smoothness penalty, which is set to 1.
  - c is the startup delay, which is 5.
  
-You must fill out the `next_quality` function in the `ABR` class.
+You must fill out the `next_quality(..)` function in the `ABR` class.
 Read the comments in `abr.py`, `video.py`, and `objective.py` to understand what information is available to you. You may use
 this information however you'd like in your ABR algorithm.
 
@@ -61,7 +61,13 @@ If you don't have access to one, the repo provides a Vagrantfile (see below).
 The dependencies are mininal. You must have python 2.7 (callable with `python`), Google Chrome v59 or higher (callable with `google-chrome`),
 and mahimahi installed (callable with `mm-link` and `mm-delay`). If you're missing any of these, copy the setup commands in the Vagrantfile.
 
-Once you have finished, you must download the video we'll be watching.
+Once you have finished, download the video you'll be using:
+```
+cd server/data/videos
+wget 6829fa18.csail.mit.edu:8080/BigBuckBunny.tar.gz
+tar -xzvf BigBuckBunny.tar.gz
+rm BigBuckBunny.tar.gz
+```
 
 ### Vagrant
 
@@ -73,8 +79,7 @@ run `startx` to start the GUI.
 
 ## Submission
 
-The first part of the assignment asks you to implement a buffer-based (BB) scheme. We don't expect code to be turned in for this part,
-only a writeup of your answers.
+The first part of the assignment asks you to implement a buffer-based (BB) scheme. We don't expect code to be turned in for this part, only a writeup of your answers.
 
 The second part asks you to come up with your own algorithm, your goal being to get a better average QoE than BB. Like PS2, we
 will provide a leaderboard for submissions. Please note that your grade on the assignment does **not** depend on your leaderboard rank!
@@ -84,8 +89,8 @@ python run_submit.py
 ```
 This will run the video locally on one of the traces we've provided you, and then publish the results to the leaderboard.
 
-After the final submission deadline, we will run all submissions on a different cellular trace that is not available to you.
-Your grade on this part of the problem set will be from this final run.
+After the final submission deadline, we will run all submissions on a different cellular trace that is not available to you
+(to discourage overfitting to the provided traces). Your grade on this part of the problem set will be from this final run.
 
 
 
