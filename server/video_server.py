@@ -1,5 +1,5 @@
 from http.server import HTTPServer, SimpleHTTPRequestHandler
-import ssl
+import sys
 import os
 import argparse
 
@@ -27,8 +27,7 @@ class PersistentHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 os.chdir(os.path.join(curdir, 'server/data'))
 httpd = HTTPServer((args.host, args.port), PersistentHTTPRequestHandler)
-#httpd.socket = ssl.wrap_socket (httpd.socket, keyfile=keyfile,
-#        certfile=certfile,
-#        server_side=True)
+print('Serving on port %d' % args.port)
+sys.stdout.flush()
 httpd.serve_forever()
 

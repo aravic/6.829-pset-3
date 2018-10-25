@@ -16,18 +16,21 @@ parser.add_argument("--video",
 
 args = parser.parse_args()
 
+LOG_DIR = os.path.join(os.getcwd(), "logs")
 IP_ADDR = "10.0.0.1"
 VID_SERVER_PORT = 4443
-CONV_MM_TRACE = "logs/converted_mm_trace.dat"
+CONV_MM_TRACE = os.path.join(LOG_DIR, "converted_mm_trace.dat")
 CHROME_DIR = "/tmp/chrome_user_dir"
-QOE_LOG = "logs/qoe.log"
+QOE_LOG = os.path.join(LOG_DIR, "qoe.log")
 
 def get_python_cmds(logfile):
     # Start ABR server.
     cmds = []
-    cmds.append("python abr_server.py --qoe-log=%s --video=%s > logs/abr_server.log 2>&1 &" % (QOE_LOG, args.video))
+    cmds.append("sleep 1")
+    cmds.append("python abr/abr_server.py --qoe-log=%s --video=%s > logs/abr_server.log 2>&1 &" % (QOE_LOG, args.video))
     # Start mahimahi tailing server. TODO
-    cmds.append("python mm_throughput_server.py --mm-log logs/mm_downlink.log --converted-trace %s > logs/throughput_server.log 2>&1 &" % CONV_MM_TRACE)
+    cmds.append("python server/mm_throughput_server.py --mm-log %s/mm_downlink.log --converted-trace %s > logs/throughput_server.log 2>&1 &" % \
+            (LOG_DIR, CONV_MM_TRACE))
     # Start chrome:
     #cmds.append("google-chrome --user-data-dir=/tmo/chrome_user_dir --incognito")
     cmds.append("google-chrome --user-data-dir=/tmp/chrome_user_dir --incognito http://%s:%d/videos/%s > logs/chrome.log 2>&1" % (IP_ADDR, VID_SERVER_PORT, args.video))
@@ -49,7 +52,7 @@ def mm_cmd():
     return delay_cmd
 
 def start_video_server():
-    proc = subprocess.Popen("python3 video_server.py --host=%s --port=%d > logs/video_server.log 2>&1" % (IP_ADDR, VID_SERVER_PORT),
+    proc = subprocess.Popen("python3 server/video_server.py --host=%s --port=%d > logs/video_server.log 2>&1" % (IP_ADDR, VID_SERVER_PORT),
             stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
@@ -87,7 +90,7 @@ def convert_mm_trace(tracefile, outfile, bucket):
         # bits
         pkt_size = (1504 * 8)
         pkts = 0
-        # Write this many entries
+        # Write 15 minutes worth of data.
         left_to_write = 60 * 10 * 1000 / bucket
         while left_to_write > 0:
             f = open(tracefile)
@@ -125,8 +128,9 @@ def parse_abr_log():
     return avg_qoe
 
 def start_all():
-    if not os.path.isdir("logs/"):
-        os.makedirs("logs/")
+    if os.path.isdir(LOG_DIR):
+        shutil.rmtree(LOG_DIR)
+    os.makedirs(LOG_DIR)
     convert_mm_trace(args.mm_trace, CONV_MM_TRACE, 500)
     ifname = setup_virtual_ip()
     server_proc = start_video_server()

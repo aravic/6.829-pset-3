@@ -77,6 +77,7 @@ def make_request_handler(params):
             }
             total_qoe = 0
             next_quality = client_dict["abr"].next_quality(abr_input)
+            sys.stdout.flush()
             if next_quality < 0 or next_quality >= len(vid.get_bitrates()):
                 raise Exception("ABR algorithm returned quality %d, which " + \
                         "is not in the range [0, %d]" % (next_quality,
@@ -169,6 +170,7 @@ def run(server_class=HTTPServer, port=8333):
     #    keyfile="server/newplainkey.pem",
     #    certfile='server/newcert.pem', server_side=True)
     print('Listening on port ' + str(port))
+    sys.stdout.flush()
     httpd.serve_forever()
 
 
