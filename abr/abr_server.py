@@ -52,7 +52,7 @@ def make_request_handler(params):
 
         def write_prev_chunk_qoe(self):
             client_dict = params["client_dict"]
-            prev_entry = client_dict["qoes"][-1]
+            prev_entry = client_dict["qoes"][-2]
             prev_chunk_ix = prev_entry["ix"]
             qoe = 0
             # Write the previous chunk
@@ -127,9 +127,9 @@ def make_request_handler(params):
                 "br": vid.get_bitrates()[next_quality],
                 "rebuf": 0,
                 "prev_br": prev_br})
-            if len(client_dict) > 1:
+            if len(client_dict["qoes"]) > 1:
                 # The rebuffer time is assigned to the previous chunk
-                client_dict["qoes"][-1]["rebuf"] = rebuf_sec
+                client_dict["qoes"][-2]["rebuf"] = rebuf_sec
                 self.write_prev_chunk_qoe()
 
             self.send(send_data)
