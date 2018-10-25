@@ -12,13 +12,12 @@ import objective
 import abr
 
 MILLI = 1000.0
-VIDEO_DIR = "server/data/videos"
 
 parser = argparse.ArgumentParser("ABR Lab")
 parser.add_argument("--video",
         type=str,
         required=True,
-        help="video to play (must match directory under server/videos")
+        help="Root directory of video to play")
 parser.add_argument("--startup-penalty",
         type=float,
         default=5.0,
@@ -51,6 +50,35 @@ def make_request_handler(params):
         def __init__(self, *args, **kwargs):
             BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
+        def write_prev_chunk_qoe(self):
+            client_dict = params["client_dict"]
+            prev_entry = client_dict["qoes"][-1]
+            prev_chunk_ix = prev_entry["ix"]
+            qoe = 0
+            # Write the previous chunk
+            if prev_chunk_ix > 0:
+                qoe = client_dict["objective"].qoe(prev_entry["br"],
+                                            prev_entry["prev_br"],
+                                            prev_entry["rebuf"])
+            else:
+                # For first chunk, just count startup delay
+                qoe = client_dict["objective"].qoe_first_chunk(
+                        prev_entry["br"], prev_entry["rebuf"])
+            
+            client_dict["qoe_log"].write('%d\t%d\t%f\t%f\n' % \
+                    (prev_entry["ix"], prev_entry["br"], prev_entry["rebuf"], qoe))
+            client_dict["qoe_log"].flush()
+
+        def send(self, json_data):
+            send_data_str = json.dumps(json_data)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', len(send_data_str))
+            self.send_header('Access-Control-Allow-Origin', "*")
+            self.send_header('Cache-Control', 'max-age=0')
+            self.end_headers()
+            self.wfile.write(send_data_str)
+
         def do_POST(self):
             content_length = int(self.headers['Content-Length'])
             post_data = json.loads(self.rfile.read(content_length))
@@ -58,8 +86,7 @@ def make_request_handler(params):
                 # This is at the end of the video.
                 return
             print(post_data)            
-            if args.max_chunks >= 0 and post_data['lastRequest'] >= args.max_chunks:
-                sys.exit(0)
+            
             client_dict = params["client_dict"]
             vid = client_dict["video"]
             rebuffer_time = float(post_data['RebufferTime']) - client_dict['last_total_rebuf']
@@ -69,13 +96,21 @@ def make_request_handler(params):
             prev_chunk_rate = 0 if fetch_time_ms <= 0 else post_data['lastChunkSize'] * MILLI / fetch_time_ms
             chunk_ix = post_data['lastRequest'] + 1
             rebuf_sec = rebuffer_time / MILLI
+            
+            if args.max_chunks >= 0 and post_data['lastRequest'] >= args.max_chunks:
+                qoe = client_dict["objective"].qoe(0, 0, rebuf_sec)
+                client_dict["qoe_log"].write('%d\t%d\t%f\t%f\n' % \
+                        (0, rebuf_sec, 0, qoe))
+                client_dict["qoe_log"].flush()
+                self.send({"refresh": False, "quality": 0})
+                return
+            
             abr_input = {
                 "chunk_index": chunk_ix,
                 "rebuffer_sec": rebuf_sec,
                 "download_rate": prev_chunk_rate,
                 "buffer_sec": post_data['buffer'],
             }
-            total_qoe = 0
             next_quality = client_dict["abr"].next_quality(abr_input)
             sys.stdout.flush()
             if next_quality < 0 or next_quality >= len(vid.get_bitrates()):
@@ -83,34 +118,21 @@ def make_request_handler(params):
                         "is not in the range [0, %d]" % (next_quality,
                             len(vid.get_bitrates) - 1))
             send_data = {
-                    "total_qoe": total_qoe,
                     "refresh": False,
                     "quality": next_quality,
             }
-            qoe = client_dict["objective"].qoe(vid.get_bitrates()[next_quality],
-                                            prev_br,
-                                            rebuf_sec)
-            if chunk_ix == 0:
-                # For first chunk, just count startup delay
-                qoe = client_dict["objective"].qoe_first_chunk(
-                        vid.get_bitrates()[next_quality], rebuf_sec)
+           
+            # Append info for qoes
+            client_dict["qoes"].append({"ix": chunk_ix,
+                "br": vid.get_bitrates()[next_quality],
+                "rebuf": 0,
+                "prev_br": prev_br})
+            if len(client_dict) > 1:
+                # The rebuffer time is assigned to the previous chunk
+                client_dict["qoes"][-1]["rebuf"] = rebuf_sec
+                self.write_prev_chunk_qoe()
 
-            client_dict["qoe_log"].write('%d\t%d\t%f\t%f\n' % \
-                    (chunk_ix, vid.get_bitrates()[next_quality], rebuf_sec, qoe))
-            client_dict["qoe_log"].flush()
-
-            end_of_video = False
-            if ( chunk_ix == vid.num_chunks() ):
-                send_data["refresh"] = True
-
-            send_data_str = json.dumps(send_data)
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Content-Length', len(send_data_str))
-            self.send_header('Access-Control-Allow-Origin', "*")
-            self.send_header('Cache-Control', 'max-age=0')
-            self.end_headers()
-            self.wfile.write(send_data_str)
+            self.send(send_data)
             
         def do_GET(self):
             self.send_response(200)
@@ -131,7 +153,7 @@ def parse_pqs(filename):
 
 def run(server_class=HTTPServer, port=8333):
 
-    video_file = os.path.join(VIDEO_DIR, args.video, "trace.dat")
+    video_file = os.path.join(args.video, "trace.dat")
     vid = video.Video(video_file)
     pqs = vid.get_bitrates()
     max_pq = max(pqs)
@@ -159,7 +181,8 @@ def run(server_class=HTTPServer, port=8333):
             "abr": abr_alg,
             "objective": obj,
             "last_total_rebuf": 0,
-            "qoe_log": qoelog, 
+            "qoe_log": qoelog,
+            "qoes": []
             }
         }
     handler_class = make_request_handler(params)

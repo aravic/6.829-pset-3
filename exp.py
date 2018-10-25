@@ -14,7 +14,8 @@ def get_python_cmds(logfile):
     # Start ABR server.
     cmds = []
     cmds.append("sleep 1")
-    cmds.append("python abr/abr_server.py --qoe-log=%s --video=BigBuckBunny > logs/abr_server.log 2>&1 &" % (QOE_LOG))
+    cmds.append("python abr/abr_server.py --qoe-log=%s --video=%s > logs/abr_server.log 2>&1 &" % \
+            (QOE_LOG, os.path.join(os.getcwd(), "server/data/videos/BigBuckBunny")))
     # Start mahimahi tailing server. TODO
     cmds.append("python server/mm_throughput_server.py --mm-log %s/mm_downlink.log --converted-trace %s > logs/throughput_server.log 2>&1 &" % \
             (LOG_DIR, CONV_MM_TRACE))
