@@ -1,29 +1,14 @@
 #!/usr/bin/python3
 
 import sys
-import subprocess as sh
 from pyvirtualdisplay import Display
 import requests
 import exp
-
-def check_continue(prompt):
-    inp = input("{} Continue (y/[n])?".format(prompt))
-    if len(inp) > 0 and ('y' in inp or 'Y' in inp):
-        return True
-    return False
+import os
+import network
 
 def check_required_files():
-    ls = sh.check_output('git ls-files', shell=True).decode('utf-8')
-    ls = ls.split("\n")
-    return 'NAME.txt' in ls
-
-def check_repo_clean():
-    cmd = 'git status -s --ignore-submodules'
-    ls = sh.check_output(cmd, shell=True)
-    if len(ls) == 0:
-        return True
-    else:
-        return check_continue("Ensure your files are committed.")
+    return os.path.exists("NAME.txt")
 
 def upload(score):
     url = "http://6829fa18.csail.mit.edu/registerPS3"
@@ -59,8 +44,9 @@ display = Display(visible=0, size=(1000,800))
 display.start()
 scaled_trace = "scaled_submit_trace.dat"
 network.trace_with_target("traces/Verizon1.dat", scaled_trace, 2)
-results = exp.start_all(scaled_trace)
+print '\nRunning experiment...this may take several minutes to complete. Please do not exit!\n'
+results = exp.start_all(scaled_trace, "10.0.0.1")
 display.stop()
-shutil.remove(scaled_trace)
+os.remove(scaled_trace)
 upload(results["score"])
 

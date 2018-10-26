@@ -31,5 +31,5 @@ def trace_with_target(trace_in, trace_out, target_rate_Mbps):
     avg = avg_throughput_Mbps(trace_in)
     scale = target_rate_Mbps/avg
     print 'Avg throughput %f, scaling by %f' % (avg, scale)
-    #scale_trace(trace_in, trace_out, scale=scale)
+    scale_trace(trace_in, trace_out, scale=scale)
 

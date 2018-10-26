@@ -36,7 +36,6 @@ def mm_cmd(trace, ip_addr):
         ("bw48.mahi", trace, mm_log_file, mm_queue_args,
                 '\n'.join(get_python_cmds(mm_log_file, ip_addr)))
     delay_cmd = 'mm-delay %d %s' % (rtt_ms / 2, link_cmd)
-    print delay_cmd
     return delay_cmd
 
 def start_video_server(ip_addr):
@@ -44,8 +43,8 @@ def start_video_server(ip_addr):
             stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
-def start_mm_cmd(params):
-    proc = subprocess.Popen(mm_cmd(params), stdout=sys.stdout, stderr=sys.stderr, shell=True)
+def start_mm_cmd(trace, ip_addr):
+    proc = subprocess.Popen(mm_cmd(trace, ip_addr), stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
 
@@ -111,7 +110,6 @@ def setup_virtual_ip(ip_addr):
         # if eth0 is not available check for an interface that is
         ifname = subprocess.check_output("ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d' | head -n 1", shell=True)
         ifname = ifname.rstrip()
-        print('Interface found: %s' % ifname)
         ret = os.system('sudo ifconfig %s:0 %s ' % (ifname, ip_addr))
         assert ret == 0
     return ifname
@@ -125,7 +123,7 @@ def start_all(trace, ip_addr):
     os.makedirs(LOG_DIR)
     convert_mm_trace(trace, CONV_MM_TRACE, 200)
     # We leave this open without closing, so we don't have to use sudo again at the end
-    ifname = setup_virtual_ip(args.ip_addr)
+    ifname = setup_virtual_ip(ip_addr)
     server_proc = start_video_server(ip_addr)
     client_proc = start_mm_cmd(trace, ip_addr)
     client_proc.wait()
