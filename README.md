@@ -14,7 +14,7 @@ Quality of Experience for users on cellular connections.
 For this part of the assignment, you will be writing ABR (adaptive bitrate) algorithms and viewing the results
 on an actual video in your browser. The lab uses the [Dash.js](https://github.com/Dash-Industry-Forum/dash.js/wiki)
 open-source video client, which implements the [DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP)
-(Dynamic Adaptive Streaming over HTTP) standard. Fortunately, you won't need to touch Javascript for this lab; you will
+(Dynamic Adaptive Streaming over HTTP) standard. Fortunately, you won't need to touch Javascript (or Rust) for this lab; you will
 be coding entirely in Python.
 
 ## The Code
