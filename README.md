@@ -1,5 +1,16 @@
 # Designing ABR Algorithms
 
+## Introduction
+
+After her successful stint at Massive Internet Transfers, Alyssa P. Hacker was hired as
+CTO of Multinational Internet Television, a company that streams on-demand TV
+shows to users. The company is facing a critical problem: users on cellular
+connections have a terrible streaming experience: their video is either too low
+quality or they rebuffer too often.
+As her first hire, you've been tasked with implementing an ABR scheme to
+maximize the
+Quality of Experience for users on cellular connections. 
+
 For this part of the assignment, you will be writing ABR (adaptive bitrate) algorithms and viewing the results
 on an actual video in your browser. The lab uses the [Dash.js](https://github.com/Dash-Industry-Forum/dash.js/wiki)
 open-source video client, which implements the [DASH](https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP)
@@ -10,7 +21,8 @@ be coding entirely in Python.
 
 ### Running experiments
 
-You'll be running the video over a link that emulates a cellular trace, using [Mahimahi](mahimahi.mit.edu). Your video client
+You'll be running the video over a link that emulates a cellular trace with deep buffers,
+using [Mahimahi](mahimahi.mit.edu). Your video client
 (e.g. your browser) runs inside the Mahimahi link shell, while the video server lies outside the shell. You may choose from
 the cellular traces in the `traces/` directory. 
 
@@ -18,9 +30,12 @@ A typical ABR algorithm would be written in Javascript as part of Dash.js. For t
 an ABR server in `abr_server.py`, which also runs inside the Mahimahi shell. You'll be modifying `abr.py`, which the ABR
 server calls to do the actual bitrate-choosing logic. You shouldn't modify any other file for this lab.
 
-To run an experiment:
+To run an experiment, choose a trace and scale it down to the desired average
+throughput before running. For example, to scale a trace to 2Mbps, run:
 ```
-python run_exp.py --mm-trace=traces/Verizon-LTE.down
+mkdir -p scaled_traces
+python scale_trace.py --in=traces/Verizon1.dat --out=scaled_traces/Verizon1.dat 2
+python run_exp.py --mm-trace=scaled_traces/Verizon1.dat
 ```
 This launches the video server and a Mahimahi link shell that runs an ABR server, throughput server (which serves link
 capacity information; you don't need to worry about this), and a Chrome browser. The page it navigates to will play the
