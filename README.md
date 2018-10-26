@@ -75,8 +75,11 @@ If you don't have access to one, the repo provides a Vagrantfile (see below).
 
 If you used the Vagrantfile to set up, skip this section.
 
-The dependencies are mininal. You must have python 2.7 (callable with `python`), Google Chrome v59 or higher (callable with `google-chrome`),
-and mahimahi installed (callable with `mm-link` and `mm-delay`). If you're missing any of these, copy the setup commands in the Vagrantfile.
+The dependencies are mininal. You must have the following installed:
+ - python 2.7 (callable with `python`) with the `numpy`, `pyvirtualdisplay`, and `requests` modules
+ - Google Chrome v59 or higher (callable with `google-chrome`)
+ - mahimahi (callable with `mm-link` and `mm-delay`).
+If you're missing any of these, copy the setup commands in the Vagrantfile.
 
 Once you have finished, download the video you'll be using:
 ```
