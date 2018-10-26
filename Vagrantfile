@@ -10,6 +10,7 @@ echo "sudo sysctl -w net.ipv4.ip_forward=1" >> ~/.bashrc
 sudo apt-get install -y python-pip
 sudo pip install numpy
 sudo pip install pyvirtualdisplay
+sudo pip install requests
 
 sudo apt-get install -y google-chrome-stable
 sudo apt-get install -y xfce4 virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
