@@ -57,7 +57,10 @@ if not s:
 
 display = Display(visible=0, size=(1000,800))
 display.start()
-results = exp.start_all()
+scaled_trace = "scaled_submit_trace.dat"
+network.trace_with_target("traces/Verizon1.dat", scaled_trace, 2)
+results = exp.start_all(scaled_trace)
 display.stop()
+shutil.remove(scaled_trace)
 upload(results["score"])
 

@@ -10,7 +10,7 @@ CONV_MM_TRACE = os.path.join(LOG_DIR, "converted_mm_trace.dat")
 CHROME_DIR = "/tmp/chrome_user_dir"
 QOE_LOG = os.path.join(LOG_DIR, "qoe.log")
 
-def get_python_cmds(logfile, ip_addr, headless):
+def get_python_cmds(logfile, ip_addr):
     # Start ABR server.
     cmds = []
     cmds.append("sleep 1")
@@ -20,22 +20,21 @@ def get_python_cmds(logfile, ip_addr, headless):
     cmds.append("python server/mm_throughput_server.py --mm-log %s/mm_downlink.log --converted-trace %s > logs/throughput_server.log 2>&1 &" % \
             (LOG_DIR, CONV_MM_TRACE))
     # Start chrome:
-    headless_arg = '--headless' if headless else ''
-    cmds.append("google-chrome --user-data-dir=/tmp/chrome_user_dir %s --incognito http://%s:%d/videos/BigBuckBunny > logs/chrome.log 2>&1" % \
-            (headless_arg, ip_addr, VID_SERVER_PORT))
+    cmds.append("google-chrome --user-data-dir=/tmp/chrome_user_dir --incognito http://%s:%d/videos/BigBuckBunny > logs/chrome.log 2>&1" % \
+            (ip_addr, VID_SERVER_PORT))
     return cmds
 
-def mm_cmd(params):
+def mm_cmd(trace, ip_addr):
     mm_log_file = "logs/mm_downlink.log"
     rtt_ms = 80
-    avg_cap = network.avg_throughput_Mbps(params.mm_trace)
+    avg_cap = network.avg_throughput_Mbps(trace)
     # Buffer is 5 * BDP
     queue = 5 * avg_cap * rtt_ms / 12
     mm_queue_args="packets=%d" % queue
     link_cmd = 'mm-link %s %s --downlink-log=%s --downlink-queue=droptail\
         --downlink-queue-args="%s" <<EOF\n%s\nEOF' % \
-        ("bw48.mahi", params.mm_trace, mm_log_file, mm_queue_args,
-                '\n'.join(get_python_cmds(mm_log_file, params.ip_addr, params.headless)))
+        ("bw48.mahi", trace, mm_log_file, mm_queue_args,
+                '\n'.join(get_python_cmds(mm_log_file, ip_addr)))
     delay_cmd = 'mm-delay %d %s' % (rtt_ms / 2, link_cmd)
     print delay_cmd
     return delay_cmd
@@ -101,13 +100,34 @@ def parse_abr_log():
             'score': avg_qoe,
             }
 
-def start_all(params):
+# One side-effect of using Mahimahi is that you all requests to localhost or 127.0.0.1
+# are redirected to within the link shell and can't reach any server running outside.
+# To solve this, we could use the host's public IP address, but a simpler option is to
+# create a virtual IP address on the public-facing interface.
+def setup_virtual_ip(ip_addr):
+    ifname = "eth0"
+    ret = os.system("sudo ifconfig %s:0 %s > /dev/null 2>&1" % (ifname, ip_addr))
+    if ret != 0:
+        # if eth0 is not available check for an interface that is
+        ifname = subprocess.check_output("ifconfig -a | sed 's/[ \t].*//;/^\(lo\|\)$/d' | head -n 1", shell=True)
+        ifname = ifname.rstrip()
+        print('Interface found: %s' % ifname)
+        ret = os.system('sudo ifconfig %s:0 %s ' % (ifname, ip_addr))
+        assert ret == 0
+    return ifname
+
+def teardown_virtual_ip(ifname):
+    os.system("sudo ifconfig %s:0 down" % ifname)
+
+def start_all(trace, ip_addr):
     if os.path.isdir(LOG_DIR):
         shutil.rmtree(LOG_DIR)
     os.makedirs(LOG_DIR)
-    convert_mm_trace(params.mm_trace, CONV_MM_TRACE, 200)
-    server_proc = start_video_server(params.ip_addr)
-    client_proc = start_mm_cmd(params)
+    convert_mm_trace(trace, CONV_MM_TRACE, 200)
+    # We leave this open without closing, so we don't have to use sudo again at the end
+    ifname = setup_virtual_ip(args.ip_addr)
+    server_proc = start_video_server(ip_addr)
+    client_proc = start_mm_cmd(trace, ip_addr)
     client_proc.wait()
     server_proc.kill()
     results = parse_abr_log()
