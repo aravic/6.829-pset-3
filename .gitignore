@@ -1,4 +1,3 @@
 *.pyc
-!submit.pyc
 __pycache__
 server/data/videos/*
