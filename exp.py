@@ -119,13 +119,11 @@ def start_all(mm_trace):
         shutil.rmtree(LOG_DIR)
     os.makedirs(LOG_DIR)
     convert_mm_trace(mm_trace, CONV_MM_TRACE, 200)
-    ifname = setup_virtual_ip()
     server_proc = start_video_server()
     client_proc = start_mm_cmd(mm_trace)
     client_proc.wait()
     server_proc.kill()
     parse_abr_log()
     os.system("sudo killall python python3 2> /dev/null")
-    teardown_virtual_ip(ifname)
 
 

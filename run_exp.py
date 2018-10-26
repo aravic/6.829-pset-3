@@ -8,5 +8,7 @@ parser.add_argument("--mm-trace",
         help="Mahimahi link trace to use")
 
 args = parser.parse_args()
+ifname = setup_virtual_ip()
 exp.start_all(args.mm_trace)
+teardown_virtual_ip(ifname)
 
