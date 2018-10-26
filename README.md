@@ -73,6 +73,8 @@ If you don't have access to one, the repo provides a Vagrantfile (see below).
 
 ### Custom machine
 
+If you used the Vagrantfile to set up, skip this section.
+
 The dependencies are mininal. You must have python 2.7 (callable with `python`), Google Chrome v59 or higher (callable with `google-chrome`),
 and mahimahi installed (callable with `mm-link` and `mm-delay`). If you're missing any of these, copy the setup commands in the Vagrantfile.
 
@@ -89,15 +91,17 @@ rm BigBuckBunny.tar.gz
 If you choose to use Vagrant, first clone this repository.
 Then, install [Vagrant](https://www.vagrantup.com/) and [Virtualbox](https://www.virtualbox.org/) and run `vagrant up`.
 The [vagrant-faster plugin](https://github.com/rdsubhas/vagrant-faster) may be useful for you.
-The Vagrantfile has been setup for you to use the GUI. After accessing the machine with `vagrant ssh`,
-run `startx` to start the GUI.
+The Vagrantfile has been setup for you to use the GUI. After the machine boots, login to the Virtualbox GUI window with user "vagrant" and password "vagrant, and run `startx` to start the GUI. (Unlike PS2, we don't recommend `vagrant ssh` since using the GUI will be helpful to view your ABR algorithms in action).
 
 ## Submission
 
 The first part of the assignment asks you to implement a buffer-based (BB) scheme. We don't expect code to be turned in for this part, only a writeup of your answers.
 
 The second part asks you to come up with your own algorithm, your goal being to get a better average QoE than BB. Like PS2, we
-will provide a leaderboard for submissions, which will be opened a few days after the problem set is released. Please note that your grade on the assignment does **not** depend on your leaderboard rank!
+will provide a leaderboard for submissions, which will be opened a few days after the problem set is released. Please note that:
+1. Your grade on the assignment does **not** depend on your leaderboard rank!
+2. Unlike PS2, the leaderboard server **will not** execute your code. It will show the results produced in your local development environment.
+
 To submit to the leaderboard, run:
 ```
 python run_submit.py
@@ -106,6 +110,3 @@ This will run the video locally on one of the traces we've provided you, and the
 
 After the final submission deadline, we will run all submissions on a different cellular trace that is not available to you
 (to discourage overfitting to the provided traces). Your grade on this part of the problem set will be from this final run.
-
-
-
