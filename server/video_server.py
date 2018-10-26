@@ -1,4 +1,5 @@
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
+from SimpleHTTPServer import SimpleHTTPRequestHandler
 import sys
 import os
 import argparse
@@ -15,18 +16,10 @@ parser.add_argument("--port",
 args=parser.parse_args()
 
 curdir = os.getcwd()
-keyfile = os.path.join(curdir, 'server/newplainkey.pem')
-certfile = os.path.join(curdir, 'server/newcert.pem')
-
-class PersistentHTTPRequestHandler(SimpleHTTPRequestHandler):
-    protocol_version = 'HTTP/1.1'
-
-    def __init__(self, *args, **kwargs):
-        SimpleHTTPRequestHandler.__init__(self, *args, **kwargs)
-
+SimpleHTTPRequestHandler.protocol_version = 'HTTP/1.1'
 
 os.chdir(os.path.join(curdir, 'server/data'))
-httpd = HTTPServer((args.host, args.port), PersistentHTTPRequestHandler)
+httpd = HTTPServer((args.host, args.port), SimpleHTTPRequestHandler)
 print('Serving on port %d' % args.port)
 sys.stdout.flush()
 httpd.serve_forever()

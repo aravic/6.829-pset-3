@@ -39,7 +39,7 @@ def mm_cmd(params):
     return delay_cmd
 
 def start_video_server(ip_addr):
-    proc = subprocess.Popen("python3 server/video_server.py --host=%s --port=%d > logs/video_server.log 2>&1" % (ip_addr, VID_SERVER_PORT),
+    proc = subprocess.Popen("python server/video_server.py --host=%s --port=%d > logs/video_server.log 2>&1" % (ip_addr, VID_SERVER_PORT),
             stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
