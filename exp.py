@@ -2,6 +2,7 @@ import sys
 import os
 import subprocess
 import shutil
+import network
 
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 VID_SERVER_PORT = 4443
@@ -26,9 +27,10 @@ def get_python_cmds(logfile, ip_addr, headless):
 
 def mm_cmd(params):
     mm_log_file = "logs/mm_downlink.log"
-    # Put in 1 BDP of buffer, assuming an average of 2 Mbps.
     rtt_ms = 80
-    queue = 5 * 2 * rtt_ms / 12
+    avg_cap = network.avg_throughput_Mbps(params.mm_trace)
+    # Buffer is 5 * BDP
+    queue = 5 * avg_cap * rtt_ms / 12
     mm_queue_args="packets=%d" % queue
     link_cmd = 'mm-link %s %s --downlink-log=%s --downlink-queue=droptail\
         --downlink-queue-args="%s" <<EOF\n%s\nEOF' % \
@@ -57,7 +59,7 @@ def convert_mm_trace(tracefile, outfile, bucket):
         t = 0
         t_offset = 0
         # bits
-        pkt_size = (1504 * 8)
+        pkt_size = (1500 * 8)
         pkts = 0
         # Write 15 minutes worth of data.
         left_to_write = 60 * 15 * 1000 / bucket

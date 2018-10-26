@@ -1,5 +1,3 @@
-import sys
-
 MTU_BYTES = 1500
 BITS_IN_BYTE = 8
 
@@ -35,4 +33,3 @@ def trace_with_target(trace_in, trace_out, target_rate_Mbps):
     print 'Avg throughput %f, scaling by %f' % (avg, scale)
     #scale_trace(trace_in, trace_out, scale=scale)
 
-trace_with_target(sys.argv[1], sys.argv[2], float(sys.argv[3]))
