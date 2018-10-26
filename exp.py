@@ -124,8 +124,8 @@ def start_all(mm_trace):
     client_proc = start_mm_cmd(mm_trace)
     client_proc.wait()
     server_proc.kill()
-    teardown_virtual_ip(ifname)
     parse_abr_log()
     os.system("sudo killall python python3 2> /dev/null")
+    teardown_virtual_ip(ifname)
 
 
