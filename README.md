@@ -31,7 +31,7 @@ an ABR server in `abr_server.py`, which also runs inside the Mahimahi shell. You
 server calls to do the actual bitrate-choosing logic. You shouldn't modify any other file for this lab.
 
 To run an experiment, choose a trace and scale it down to the desired average
-throughput before running. For example, to scale a trace to 2Mbps, run:
+throughput before running. Please don't modify the `traces` directory; instead, make a separate directory for traces that you scale yourself. For example, to scale a trace to 2Mbps, run:
 ```
 mkdir -p scaled_traces
 python scale_trace.py --in=traces/Verizon1.dat --out=scaled_traces/Verizon1.dat --target-mbps=2
