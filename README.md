@@ -103,7 +103,8 @@ The first part of the assignment asks you to implement a buffer-based (BB) schem
 The second part asks you to come up with your own algorithm, your goal being to get a better average QoE than BB. Like PS2, we
 will provide a leaderboard for submissions, which will be opened a few days after the problem set is released. Please note that:
 1. Your grade on the assignment does **not** depend on your leaderboard rank!
-2. Unlike PS2, the leaderboard server **will not** execute your code. It will show the results produced in your local development environment.
+2. Unlike PS2, the leaderboard server **will not** execute your code. It will show the results produced in your local development environment. We therefore ask that you act in good faith and don't modify the submission code.
+3. Unlike other local runs with `run_exp.py`, the submission run will not bring up a Chrome browser.
 
 To submit to the leaderboard, run:
 ```
