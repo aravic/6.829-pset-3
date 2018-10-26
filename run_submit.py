@@ -49,4 +49,4 @@ results = exp.start_all(scaled_trace, "10.0.0.1")
 display.stop()
 os.remove(scaled_trace)
 upload(results["score"])
-
+os.system("killall Xvfb > /dev/null 2>&1")

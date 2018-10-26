@@ -3,6 +3,7 @@ import os
 import subprocess
 import shutil
 import network
+import signal
 
 LOG_DIR = os.path.join(os.getcwd(), "logs")
 VID_SERVER_PORT = 4443
@@ -44,6 +45,7 @@ def start_video_server(ip_addr):
     return proc
 
 def start_mm_cmd(trace, ip_addr):
+    print 'Running...'
     proc = subprocess.Popen(mm_cmd(trace, ip_addr), stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
@@ -117,6 +119,11 @@ def setup_virtual_ip(ip_addr):
 def teardown_virtual_ip(ifname):
     os.system("sudo ifconfig %s:0 down" % ifname)
 
+def cleanup():
+    # Kill all python processes that aren't us.
+    pid = os.getpid()
+    os.system("ps | grep python | grep -v '%d' | cut -d ' ' -f 1,2 | xargs kill" % pid)
+
 def start_all(trace, ip_addr):
     if os.path.isdir(LOG_DIR):
         shutil.rmtree(LOG_DIR)
@@ -128,6 +135,7 @@ def start_all(trace, ip_addr):
     client_proc = start_mm_cmd(trace, ip_addr)
     client_proc.wait()
     server_proc.kill()
+    cleanup()
     results = parse_abr_log()
     return results
 
