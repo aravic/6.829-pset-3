@@ -9,21 +9,22 @@ CONV_MM_TRACE = os.path.join(LOG_DIR, "converted_mm_trace.dat")
 CHROME_DIR = "/tmp/chrome_user_dir"
 QOE_LOG = os.path.join(LOG_DIR, "qoe.log")
 
-def get_python_cmds(logfile, ip_addr):
+def get_python_cmds(logfile, ip_addr, headless):
     # Start ABR server.
     cmds = []
     cmds.append("sleep 1")
     cmds.append("python abr/abr_server.py --qoe-log=%s --video=%s > logs/abr_server.log 2>&1 &" % \
             (QOE_LOG, os.path.join(os.getcwd(), "server/data/videos/BigBuckBunny")))
-    # Start mahimahi tailing server. TODO
+    # Start mahimahi tailing server.
     cmds.append("python server/mm_throughput_server.py --mm-log %s/mm_downlink.log --converted-trace %s > logs/throughput_server.log 2>&1 &" % \
             (LOG_DIR, CONV_MM_TRACE))
     # Start chrome:
-    #cmds.append("google-chrome --user-data-dir=/tmo/chrome_user_dir --incognito")
-    cmds.append("google-chrome --user-data-dir=/tmp/chrome_user_dir --incognito http://%s:%d/videos/BigBuckBunny > logs/chrome.log 2>&1" % (ip_addr, VID_SERVER_PORT))
+    headless_arg = '--headless' if headless else ''
+    cmds.append("google-chrome --user-data-dir=/tmp/chrome_user_dir %s --incognito http://%s:%d/videos/BigBuckBunny > logs/chrome.log 2>&1" % \
+            (headless_arg, ip_addr, VID_SERVER_PORT))
     return cmds
 
-def mm_cmd(trace, ip_addr):
+def mm_cmd(params):
     mm_log_file = "logs/mm_downlink.log"
     # Put in 1 BDP of buffer, assuming an average of 2 Mbps.
     rtt_ms = 80
@@ -31,8 +32,8 @@ def mm_cmd(trace, ip_addr):
     mm_queue_args="packets=%d" % queue
     link_cmd = 'mm-link %s %s --downlink-log=%s --downlink-queue=droptail\
         --downlink-queue-args="%s" <<EOF\n%s\nEOF' % \
-        ("bw48.mahi", trace, mm_log_file, mm_queue_args,
-                '\n'.join(get_python_cmds(mm_log_file, ip_addr)))
+        ("bw48.mahi", params.mm_trace, mm_log_file, mm_queue_args,
+                '\n'.join(get_python_cmds(mm_log_file, params.ip_addr, params.headless)))
     delay_cmd = 'mm-delay %d %s' % (rtt_ms / 2, link_cmd)
     print delay_cmd
     return delay_cmd
@@ -42,8 +43,8 @@ def start_video_server(ip_addr):
             stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
-def start_mm_cmd(trace, ip_addr):
-    proc = subprocess.Popen(mm_cmd(trace, ip_addr), stdout=sys.stdout, stderr=sys.stderr, shell=True)
+def start_mm_cmd(params):
+    proc = subprocess.Popen(mm_cmd(params), stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
 
@@ -95,13 +96,13 @@ def parse_abr_log():
     print '%d chunks fetched, total rebuffer time = %fs, Avg QoE = %f' % (nchunks, rebuf, avg_qoe)
     return avg_qoe
 
-def start_all(mm_trace, ip_addr):
+def start_all(params):
     if os.path.isdir(LOG_DIR):
         shutil.rmtree(LOG_DIR)
     os.makedirs(LOG_DIR)
-    convert_mm_trace(mm_trace, CONV_MM_TRACE, 200)
-    server_proc = start_video_server(ip_addr)
-    client_proc = start_mm_cmd(mm_trace, ip_addr)
+    convert_mm_trace(params.mm_trace, CONV_MM_TRACE, 200)
+    server_proc = start_video_server(params.ip_addr)
+    client_proc = start_mm_cmd(params)
     client_proc.wait()
     server_proc.kill()
     parse_abr_log()
