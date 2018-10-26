@@ -96,7 +96,10 @@ def parse_abr_log():
         return 0
     avg_qoe /= nchunks
     print '%d chunks fetched, total rebuffer time = %fs, Avg QoE = %f' % (nchunks, rebuf, avg_qoe)
-    return avg_qoe
+    return {'num_chunks': nchunks,
+            'rebuf': rebuf,
+            'score': avg_qoe,
+            }
 
 def start_all(params):
     if os.path.isdir(LOG_DIR):
@@ -107,7 +110,7 @@ def start_all(params):
     client_proc = start_mm_cmd(params)
     client_proc.wait()
     server_proc.kill()
-    parse_abr_log()
-    os.system("sudo killall python python3 2> /dev/null")
-
+    results = parse_abr_log()
+    os.system("killall python python3 2> /dev/null")
+    return results
 
