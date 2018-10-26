@@ -27,7 +27,7 @@ using [Mahimahi](mahimahi.mit.edu). Your video client
 the cellular traces in the `traces/` directory. 
 
 A typical ABR algorithm would be written in Javascript as part of Dash.js. For this lab, we've abstracted this away with
-an ABR server in `abr_server.py`, which also runs inside the Mahimahi shell. You'll be modifying `abr.py`, which the ABR
+an ABR server in `abr_server.py`, which also runs inside the Mahimahi shell and has a fast connection to the browser. You'll be modifying `abr.py`, which the ABR
 server calls to do the actual bitrate-choosing logic. You shouldn't modify any other file for this lab.
 
 To run an experiment, choose a trace and scale it down to the desired average
