@@ -105,7 +105,7 @@ def parse_abr_log():
     for line in open(QOE_LOG):
         parts = line.split()
         avg_qoe += float(parts[-1])
-        rebuf += float(parts[1])
+        rebuf += float(parts[2])
         nchunks += 1
     if nchunks == 0:
         print 'No chunks fetched'

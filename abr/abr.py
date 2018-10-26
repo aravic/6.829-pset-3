@@ -23,5 +23,5 @@ class AbrAlg:
     # len(vid.get_bitrates()) - 1 indicates the highest quality.
     def next_quality(self, feedback):
         # TODO: Fill me in!
-        return 18 
+        return 4 
 
