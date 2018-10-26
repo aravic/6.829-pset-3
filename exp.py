@@ -129,6 +129,5 @@ def start_all(trace, ip_addr):
     client_proc.wait()
     server_proc.kill()
     results = parse_abr_log()
-    os.system("killall python python3 2> /dev/null")
     return results
 
