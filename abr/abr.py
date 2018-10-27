@@ -3,10 +3,9 @@
 # The AbrAlg class exposes an API for you to dictate how the next chunk of a
 # video should be fetched.
 
-import video
-import objective
-
 class AbrAlg:
+    # vid is of type video.Video
+    # obj is of type objective.Objective
     def __init__(self, vid, obj):
         pass
 
@@ -14,7 +13,7 @@ class AbrAlg:
     # - 'chunk_index': the index of the chunk to be fetched next, starting at 0.
     # - 'rebuffer_sec': the number of seconds spent rebuffering immediately
     # before the previously watched chunk.
-    # - 'download_rate': The average fetch rate (in kbps) of the previous chunk
+    # - 'download_rate_kbps': The average download rate (in kbps) of the previous chunk
     # - 'buffer_sec': the size of the client's playback buffer (in seconds)
     #
     # You should return an index into vid.get_bitrates(), which specifies the
@@ -23,5 +22,6 @@ class AbrAlg:
     # len(vid.get_bitrates()) - 1 indicates the highest quality.
     def next_quality(self, feedback):
         # TODO: Fill me in!
-        return 4 
+        # Return the lowest bitrate chunk.
+        return 0
 

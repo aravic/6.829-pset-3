@@ -93,7 +93,7 @@ def make_request_handler(params):
             client_dict['last_total_rebuf'] = float(post_data['RebufferTime'])
             fetch_time_ms = post_data['lastChunkFinishTime'] - post_data['lastChunkStartTime']
             prev_br = vid.get_bitrates()[post_data['lastquality']]
-            prev_chunk_rate = 0 if fetch_time_ms <= 0 else post_data['lastChunkSize'] * MILLI / fetch_time_ms
+            prev_chunk_rate = 0 if fetch_time_ms <= 0 else post_data['lastChunkSize'] / float(fetch_time_ms)
             chunk_ix = post_data['lastRequest'] + 1
             rebuf_sec = rebuffer_time / MILLI
             
@@ -108,7 +108,7 @@ def make_request_handler(params):
             abr_input = {
                 "chunk_index": chunk_ix,
                 "rebuffer_sec": rebuf_sec,
-                "download_rate": prev_chunk_rate,
+                "download_ratei_kbps": prev_chunk_rate,
                 "buffer_sec": post_data['buffer'],
             }
             next_quality = client_dict["abr"].next_quality(abr_input)
