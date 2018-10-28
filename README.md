@@ -34,7 +34,7 @@ To run an experiment, choose a trace and scale it down to the desired average
 throughput before running. Please don't modify the `traces` directory; instead, make a separate directory for traces that you scale yourself. For example, to scale a trace to 2Mbps, run:
 ```
 mkdir -p scaled_traces
-python scale_trace.py --in=traces/Verizon1.dat --out=scaled_traces/Verizon1.dat --target-mbps=2
+python scale_trace.py --trace-in=traces/Verizon1.dat --trace-out=scaled_traces/Verizon1.dat --target-mbps=2
 python run_exp.py --mm-trace=scaled_traces/Verizon1.dat
 ```
 This launches the video server and a Mahimahi link shell that runs an ABR server, throughput server (which serves link

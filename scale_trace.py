@@ -2,11 +2,11 @@ import network
 import argparse
 
 parser = argparse.ArgumentParser("Trace Scaler")
-parser.add_argument("--in",
+parser.add_argument("--trace-in",
         type=str,
         required=True,
         help="Trace to scale")
-parser.add_argument("--out",
+parser.add_argument("--trace-out",
         type=str,
         required=True,
         help="File to write the scaled trace to")
@@ -15,4 +15,6 @@ parser.add_argument("--target-mbps",
         required=True,
         help="Target average throughput, in Mbps")
 
-network.trace_with_target(args.in, args.out, args.target_mbps)
+args = parser.parse_args()
+
+network.trace_with_target(args.trace_in, args.trace_out, args.target_mbps)
