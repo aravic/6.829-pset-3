@@ -81,13 +81,7 @@ The dependencies are mininal. You must have the following installed:
  - mahimahi (callable with `mm-link` and `mm-delay`).
 If you're missing any of these, copy the setup commands in the Vagrantfile.
 
-Once you have finished, download the video you'll be using:
-```
-cd server/data/videos
-wget 6829fa18.csail.mit.edu:8080/BigBuckBunny.tar.gz
-tar -xzvf BigBuckBunny.tar.gz
-rm BigBuckBunny.tar.gz
-```
+Once you have finished, [download the video](https://www.dropbox.com/s/1j6bh8hre2vl3zj/BigBuckBunny.tar.gz?dl=0) you'll be using into the `server/data/videos` directory. Then extract it using `tar -xzvf BigBuckBunny.tar.gz`
 
 ### Vagrant
 
