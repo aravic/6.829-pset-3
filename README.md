@@ -98,9 +98,11 @@ The Vagrantfile has been setup for you to use the GUI. After the machine boots, 
 
 ## Submission
 
-The first part of the assignment asks you to implement a buffer-based (BB) scheme. We don't expect code to be turned in for this part, only a writeup of your answers.
+Your writeup for the entire problem set (problems 1 and 2) should be placed in WRITEUP.{md,pdf,txt}. We will provide a Google form for you to upload a link to your repository via Piazza. Before you submit, make sure you add "vikramn" and "akshayn" as collaborators.
 
-The second part asks you to come up with your own algorithm, your goal being to get a better average QoE than BB. Like PS2, we
+The first part of problem 2 in this of the assignment asks you to implement a buffer-based (BB) scheme. We don't expect code to be turned in for this part, only a writeup of your answers.
+
+The second part of problem 2 asks you to come up with your own algorithm, your goal being to get a better average QoE than BB. Like PS2, we
 will provide a leaderboard for submissions, which will be opened a few days after the problem set is released. Please note that:
 1. Your grade on the assignment does **not** depend on your leaderboard rank!
 2. Unlike PS2, the leaderboard server **will not** execute your code. It will show the results produced in your local development environment. We therefore ask that you act in good faith and don't modify the submission code.
