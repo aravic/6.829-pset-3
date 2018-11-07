@@ -94,7 +94,7 @@ def make_request_handler(params):
             fetch_time_ms = post_data['lastChunkFinishTime'] - post_data['lastChunkStartTime']
             prev_br = vid.get_bitrates()[post_data['lastquality']]
             prev_chunk_rate = 0 if fetch_time_ms <= 0 else post_data['lastChunkSize'] / float(fetch_time_ms)
-            chunk_ix = post_data['lastRequest'] + 1
+            chunk_ix = post_data['nextRequest']
             rebuf_sec = rebuffer_time / MILLI
             
             if args.max_chunks >= 0 and post_data['lastRequest'] >= args.max_chunks:
