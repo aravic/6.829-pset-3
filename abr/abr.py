@@ -7,7 +7,7 @@ class AbrAlg:
     # vid is of type video.Video
     # obj is of type objective.Objective
     def __init__(self, vid, obj):
-        pass
+        self.vid = vid
 
     # Feedback is a dictionary with the following fields;
     # - 'chunk_index': the index of the chunk to be fetched next, starting at 0.

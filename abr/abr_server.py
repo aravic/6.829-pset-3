@@ -82,13 +82,13 @@ def make_request_handler(params):
         def do_POST(self):
             content_length = int(self.headers['Content-Length'])
             post_data = json.loads(self.rfile.read(content_length))
-            if 'pastThroughput' in post_data:
+            client_dict = params["client_dict"]
+            vid = client_dict["video"]
+            if 'pastThroughput' in post_data or post_data['lastRequest'] >= vid.num_chunks()-1:
                 # This is at the end of the video.
                 return
             print(post_data)            
             
-            client_dict = params["client_dict"]
-            vid = client_dict["video"]
             rebuffer_time = float(post_data['RebufferTime']) - client_dict['last_total_rebuf']
             client_dict['last_total_rebuf'] = float(post_data['RebufferTime'])
             fetch_time_ms = post_data['lastChunkFinishTime'] - post_data['lastChunkStartTime']
