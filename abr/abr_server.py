@@ -50,9 +50,9 @@ def make_request_handler(params):
         def __init__(self, *args, **kwargs):
             BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
-        def write_prev_chunk_qoe(self):
+        def write_prev_chunk_qoe(selfi, which=-2):
             client_dict = params["client_dict"]
-            prev_entry = client_dict["qoes"][-2]
+            prev_entry = client_dict["qoes"][which]
             prev_chunk_ix = prev_entry["ix"]
             qoe = 0
             # Write the previous chunk
@@ -84,10 +84,14 @@ def make_request_handler(params):
             post_data = json.loads(self.rfile.read(content_length))
             client_dict = params["client_dict"]
             vid = client_dict["video"]
+            rebuffer_time = float(post_data['RebufferTime']) - client_dict['last_total_rebuf']
+            print(post_data)            
             if 'pastThroughput' in post_data or post_data['lastRequest'] >= vid.num_chunks()-1:
                 # This is at the end of the video.
+                # Write the previous qoe.
+                client_dict["qoes"][-1]["rebuf"] = rebuffer_time / MILLI
+                self.write_prev_chunk_qoe(which=-1)
                 return
-            print(post_data)            
             
             rebuffer_time = float(post_data['RebufferTime']) - client_dict['last_total_rebuf']
             client_dict['last_total_rebuf'] = float(post_data['RebufferTime'])
