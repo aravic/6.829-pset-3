@@ -112,7 +112,7 @@ def make_request_handler(params):
             abr_input = {
                 "chunk_index": chunk_ix,
                 "rebuffer_sec": rebuf_sec,
-                "download_ratei_kbps": prev_chunk_rate,
+                "download_rate_kbps": prev_chunk_rate,
                 "buffer_sec": post_data['buffer'],
             }
             next_quality = client_dict["abr"].next_quality(abr_input)
