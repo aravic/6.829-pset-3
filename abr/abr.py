@@ -23,4 +23,4 @@ class AbrAlg:
     def next_quality(self, feedback):
         # TODO: Fill me in!
         # Return the lowest bitrate chunk.
-        print 0
+        return 0
