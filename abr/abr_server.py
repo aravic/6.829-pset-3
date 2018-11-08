@@ -120,7 +120,7 @@ def make_request_handler(params):
             if next_quality < 0 or next_quality >= len(vid.get_bitrates()):
                 raise Exception("ABR algorithm returned quality %d, which " + \
                         "is not in the range [0, %d]" % (next_quality,
-                            len(vid.get_bitrates) - 1))
+                            len(vid.get_bitrates()) - 1))
             send_data = {
                     "refresh": False,
                     "quality": next_quality,
