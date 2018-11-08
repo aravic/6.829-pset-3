@@ -50,7 +50,7 @@ def make_request_handler(params):
         def __init__(self, *args, **kwargs):
             BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
-        def write_prev_chunk_qoe(selfi, which=-2):
+        def write_prev_chunk_qoe(self, which=-2):
             client_dict = params["client_dict"]
             prev_entry = client_dict["qoes"][which]
             prev_chunk_ix = prev_entry["ix"]
@@ -97,7 +97,7 @@ def make_request_handler(params):
             client_dict['last_total_rebuf'] = float(post_data['RebufferTime'])
             fetch_time_ms = post_data['lastChunkFinishTime'] - post_data['lastChunkStartTime']
             prev_br = vid.get_bitrates()[post_data['lastquality']]
-            prev_chunk_rate = 0 if fetch_time_ms <= 0 else post_data['lastChunkSize'] / float(fetch_time_ms)
+            prev_chunk_rate = 0 if fetch_time_ms <= 0 else 8 * post_data['lastChunkSize'] / float(fetch_time_ms)
             chunk_ix = post_data['nextRequest']
             rebuf_sec = rebuffer_time / MILLI
             

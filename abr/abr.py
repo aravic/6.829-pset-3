@@ -23,5 +23,6 @@ class AbrAlg:
     def next_quality(self, feedback):
         # TODO: Fill me in!
         # Return the lowest bitrate chunk.
-        return 0
+        print feedback['download_rate_kbps']
+        return 19
 
