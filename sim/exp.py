@@ -11,21 +11,23 @@ CONV_MM_TRACE = os.path.join(LOG_DIR, "converted_mm_trace.dat")
 CHROME_DIR = "/tmp/chrome_user_dir"
 QOE_LOG = os.path.join(LOG_DIR, "qoe.log")
 
-def get_python_cmds(logfile, ip_addr):
+def get_python_cmds(logfile, ip_addr, abr, time):
     # Start ABR server.
     cmds = []
     cmds.append("sleep 1")
-    cmds.append("python abr/abr_server.py --qoe-log=%s --video=%s > logs/abr_server.log 2>&1 &" % \
-            (QOE_LOG, os.path.join(os.getcwd(), "server/data/videos/BigBuckBunny")))
+    cmds.append("python abr/abr_server.py --qoe-log=%s --video=%s --abr=%s > logs/abr_server.log 2>&1 &" % \
+            (QOE_LOG, os.path.join(os.getcwd(), "server/data/videos/BigBuckBunny"), abr))
     # Start mahimahi tailing server.
     cmds.append("python server/mm_throughput_server.py --mm-log %s/mm_downlink.log --converted-trace %s > logs/throughput_server.log 2>&1 &" % \
             (LOG_DIR, CONV_MM_TRACE))
     # Start chrome:
-    cmds.append("google-chrome --user-data-dir=/tmp/chrome_user_dir --incognito http://%s:%d/videos/BigBuckBunny > logs/chrome.log 2>&1" % \
-            (ip_addr, VID_SERVER_PORT))
+    if time is None:
+        time = int(1e6)
+    cmds.append("timeout %f google-chrome --user-data-dir=/tmp/chrome_user_dir --incognito http://%s:%d/videos/BigBuckBunny > logs/chrome.log 2>&1" % \
+            (time, ip_addr, VID_SERVER_PORT))
     return cmds
 
-def mm_cmd(trace, ip_addr):
+def mm_cmd(trace, ip_addr, abr, time):
     mm_log_file = "logs/mm_downlink.log"
     rtt_ms = 80
     avg_cap = network.avg_throughput_Mbps(trace)
@@ -35,7 +37,7 @@ def mm_cmd(trace, ip_addr):
     link_cmd = 'mm-link %s %s --downlink-log=%s --downlink-queue=droptail\
         --downlink-queue-args="%s" <<EOF\n%s\nEOF' % \
         ("bw48.mahi", trace, mm_log_file, mm_queue_args,
-                '\n'.join(get_python_cmds(mm_log_file, ip_addr)))
+                '\n'.join(get_python_cmds(mm_log_file, ip_addr, abr, time)))
     delay_cmd = 'mm-delay %d %s' % (rtt_ms / 2, link_cmd)
     return delay_cmd
 
@@ -44,9 +46,9 @@ def start_video_server(ip_addr):
             stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
-def start_mm_cmd(trace, ip_addr):
+def start_mm_cmd(trace, ip_addr, abr, time):
     print 'Running...'
-    proc = subprocess.Popen(mm_cmd(trace, ip_addr), stdout=sys.stdout, stderr=sys.stderr, shell=True)
+    proc = subprocess.Popen(mm_cmd(trace, ip_addr, abr, time), stdout=sys.stdout, stderr=sys.stderr, shell=True)
     return proc
 
 
@@ -124,15 +126,16 @@ def cleanup():
     pid = os.getpid()
     os.system("ps | grep python | grep -v '%d' | cut -d ' ' -f 1,2 | xargs kill" % pid)
 
-def start_all(trace, ip_addr):
+def start_all(trace, ip_addr, abr, time):
     if os.path.isdir(LOG_DIR):
         shutil.rmtree(LOG_DIR)
     os.makedirs(LOG_DIR)
     convert_mm_trace(trace, CONV_MM_TRACE, 200)
+
     # We leave this open without closing, so we don't have to use sudo again at the end
     ifname = setup_virtual_ip(ip_addr)
     server_proc = start_video_server(ip_addr)
-    client_proc = start_mm_cmd(trace, ip_addr)
+    client_proc = start_mm_cmd(trace, ip_addr, abr, time)
     client_proc.wait()
     server_proc.kill()
     cleanup()
