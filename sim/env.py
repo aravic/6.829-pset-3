@@ -118,7 +118,7 @@ class Env:
   def get_qoes(self):
     qoes = []
     for cs in self.chunk_stats:
-      qoes.append(cs.qoe_qual, cs.rp, cs.sp, cs.qoe)
+      qoes.append([cs.qoe_qual, cs.rp, cs.sp, cs.qoe])
     return qoes
 
   def log_qoe(self, fname=None):

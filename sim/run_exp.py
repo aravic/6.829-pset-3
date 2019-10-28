@@ -12,6 +12,7 @@ from your_code import abr, objective, video
 from absl import app
 from sim import network
 from sim.env import Env
+from sim.generate_plts import generate_plts
 import utils
 
 KILO = 1000.0
@@ -44,7 +45,8 @@ parser.add_argument("--mm-trace",
                     type=str,
                     required=True,
                     help="Mahimahi link trace to use")
-parser.add_argument('--qoe-out-file', type=str, default=None)
+parser.add_argument('--mm-start-idx', type=int, default=0)
+parser.add_argument('--results-dir', type=str, required=True)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -67,7 +69,7 @@ def main(argv):
 
   obj = objective.Objective(pq_dict, args.startup_penalty,
                             args.rebuffer_penalty, args.smooth_penalty)
-  net = network.Network(args.mm_trace)
+  net = network.Network(args.mm_trace, args.mm_start_idx)
   env = Env(vid, obj, net)
   obj_client = copy.deepcopy(obj)
   vid_client = copy.deepcopy(vid)
@@ -120,11 +122,21 @@ def main(argv):
           (0, 1, l[0], l[1], l[2], l[3]))
 
   # print('Avg network throughput (Mbps): %.2f'% network.avg_throughput_Mbps_time(args.mm_trace, vid.num_max_chunks()* 4.0))
-  if args.qoe_out_file is not None:
-    utils.mkdir_if_not_exists(os.path.dirname(args.qoe_out_file))
-    env.log_qoe(args.qoe_out_file)
+  if args.results_dir is not None:
+    utils.mkdir_if_not_exists(args.results_dir)
+    env.log_qoe(os.path.join(args.results_dir, 'qoe.txt'))
 
-  generate_plts(env.get_qoes(), buff_lens, ttds)
+  with open(os.path.join(args.results_dir, 'results.json'), 'w') as f:
+    (qual, ), (rp, ), (sp, ), (qoe, ) = env.get_avg_qoe_breakdown(1)
+    json.dump(dict(avg_quality_score=qual,
+                   avg_rebuf_penalty=rp,
+                   avg_smoothness_penalty=sp,
+                   avg_net_qoe=qoe),
+              f,
+              indent=4,
+              sort_keys=True)
+  generate_plts(args.results_dir, env.get_qoes(), buff_lens, ttds,
+                args.mm_trace, args.mm_start_idx)
 
 
 if __name__ == '__main__':

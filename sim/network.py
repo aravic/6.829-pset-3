@@ -16,7 +16,7 @@ class WrapAroundException(Exception):
 
 class Network:
 
-  def __init__(self, mm_fname):
+  def __init__(self, mm_fname, mm_start_idx=-1):
     l = []
     with open(mm_fname, 'r') as f:
       for line in f.read().splitlines():
@@ -31,10 +31,7 @@ class Network:
       self.l[i] = l[i] - l[i - 1]
       assert self.l[i] >= 0
 
-    self.reset()
-
-  def reset(self):
-    self.idx = -1
+    self.idx = mm_start_idx
     self.shift_t = 0
 
   # get time to download in seconds
@@ -54,7 +51,7 @@ class Network:
     return time_ms * MILLI
 
   def ttd(self, n_bytes):
-
+    # returns in seconds
     N = len(self.l)
     n_packets = int(math.ceil(n_bytes / MTU))
 
@@ -62,7 +59,7 @@ class Network:
 
     idx_jump = self.idx + n_packets
 
-    time_ms = self.l2[idx_jump % N] + self.l2[-1] * int(idx_jump // N)
+    time_ms = self.l2[idx_jump % N] + self.l2[-1] * int(idx_jump / N)
 
     if self.idx >= 0:
       time_ms -= self.l2[self.idx % N] + self.l2[-1] * int(self.idx / N)
@@ -148,24 +145,6 @@ class Network:
     self.idx = random.randint(0, len(self.l) - 1)
 
 
-def avg_throughput_obeo_Mbps_time(trace_file, time=None):
-  ts, bs = [], []
-  for line in open(trace_file).read().splitlines():
-    t, b = line.split()
-    ts.append(float(t) * MILLI)
-    bs.append(float(b) * MILLI)
-
-  N = len(ts)
-  s = 0.
-  w = 0.
-  for i in range(N - 1):
-    s += ((ts[i + 1] - ts[i]) * (bs[i + 1] + bs[i]) / 2.)
-    w += (ts[i + 1] - ts[i])
-
-  # throughput in Mbps.
-  return s / w
-
-
 # time in seconds
 def avg_throughput_Mbps_time(trace_file, time):
   l = []
@@ -216,42 +195,3 @@ def trace_with_target(trace_in, trace_out, target_rate_Mbps):
   scale = target_rate_Mbps / avg
   print('Avg throughput %f, scaling by %f' % (avg, scale))
   scale_trace(trace_in, trace_out, scale=scale)
-
-
-def plt_mahimahi_bw(log_file, N=5000):
-  time_all = []
-  packet_sent_all = []
-  last_time_stamp = 0
-  packet_sent = 0
-
-  with open(log_file, 'r') as f:
-    for line in f:
-      time_stamp = int(line.split()[0])
-      if time_stamp == last_time_stamp:
-        packet_sent += 1
-        continue
-      else:
-        time_all.append(last_time_stamp)
-        packet_sent_all.append(packet_sent)
-        packet_sent = 1
-        last_time_stamp = time_stamp
-
-  time_window = np.array(time_all[1:]) - np.array(time_all[:-1])
-  throuput_all = MTU * \
-                 BITS_IN_BYTE * \
-                 np.array(packet_sent_all[1:]) / \
-                 time_window * \
-                 KILO / \
-                 MEGA
-
-  x = np.array(time_all[1:]) * MILLI
-  # y = np.convolve(throuput_all, np.ones(N,)/N, mode='same')
-  y = throuput_all
-
-  def running_mean(x, N):
-    cumsum = np.cumsum(np.insert(x, 0, 0))
-    return (cumsum[N:] - cumsum[:-N]) / float(N)
-
-  x_mean = running_mean(x, N)[::N]
-  y_mean = running_mean(y, N)[::N]
-  return x, y, x_mean, y_mean
