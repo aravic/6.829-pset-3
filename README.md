@@ -72,7 +72,7 @@ On your host machine, from the starter repo, do the following
 - Now run the following: `cd /abr` and `sudo ./install.sh`
   - This should do the following:
     - Install python and required python packages
-    - Download the video and traces from our leaderboard server.
+    - Download the traces from our leaderboard server.
     - If any of the above steps didn't run correctly, then re-run the install script or selectively re-run the failing commands.
 
 Unfortunately, we will be using the `2.7` version of python. We will update this to `python3` for the next offering.
