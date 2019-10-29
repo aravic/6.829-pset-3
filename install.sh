@@ -16,3 +16,11 @@ sudo sed -i 's/allowed_users=.*$/allowed_users=anybody/' /etc/X11/Xwrapper.confi
 
 cd /abr/real/data/videos/ && curl -O http://6829fa18.csail.mit.edu:8080/BigBuckBunny.tar.gz
 cd /abr/real/data/videos/ && tar -xzf BigBuckBunny.tar.gz
+cd /abr/real/data/videos/ && rm BigBuckBunny.tar.gz
+
+cd /abr/network/traces/
+curl -O http://6829fa18.csail.mit.edu:8080/traces.tar.gz
+tar -xzf traces.tar.gz
+rm traces.tar.gz
+mv /abr/network/traces/traces/* ./
+rm -r /abr/network/traces/traces

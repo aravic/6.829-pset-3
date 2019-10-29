@@ -75,7 +75,7 @@ def buffer_plot(result_dir, buffer_lengths, ttds, delta=0.1):
   plt.savefig(os.path.join(result_dir, 'buffer_length.png'))
 
 
-def plt_mahimahi_bw(result_dir, trace_file, start_idx, total_time, N=10000):
+def plt_mahimahi_bw(result_dir, trace_file, start_idx, total_time, N=10):
 
   trace = []
   with open(trace_file, 'r') as f:
@@ -133,9 +133,12 @@ def plt_mahimahi_bw(result_dir, trace_file, start_idx, total_time, N=10000):
   y_mean = running_mean(y, N)[::N]
 
   plt.figure()
-  plt.plot(x, y)
+  plt.plot(x_mean,
+           y_mean,
+           label='Throughput (Mean: %.3f Mbps)' % np.mean(y_mean))
   plt.xlabel('Time (sec)')
   plt.ylabel('link Capacity (Mbps)')
+  plt.legend()
   plt.savefig(os.path.join(result_dir, 'link_capacity.png'))
 
 
