@@ -1,6 +1,5 @@
 *._DS_Store
 *.pyc
 __pycache__
-server/data/videos/*
 mpc/*
 bb/*

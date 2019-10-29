@@ -75,6 +75,8 @@ On your host machine, from the starter repo, do the following
     - Download the video and traces from our leaderboard server.
     - If any of the above steps didn't run correctly, then re-run the install script or selectively re-run the failing commands.
 
+Unfortunately, we will be using the `2.7` version of python. We will update this to `python3` for the next offering.
+
 ### Video
 You will be streaming this video using your ABR algorithm: (https://www.youtube.com/watch?v=aqz-KE-bpKQ)
 Since we're using simulation you won't be able to see the video play in real-time.
