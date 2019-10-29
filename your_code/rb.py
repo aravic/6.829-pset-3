@@ -1,12 +1,9 @@
-# This is the only file you should need to modify to do this assignment.
-#
-# The AbrAlg class exposes an API for you to dictate how the next chunk of a
-# video should be fetched.
+import numpy as np
 import argparse
 parser = argparse.ArgumentParser()
 # TODO: Add the required command line arguments to your abr algorithm here.
 # See below for an example
-parser.add_argument('--param1', type=float, default=1)
+parser.add_argument('--past_n_throughput_vals', type=float, default=5)
 
 
 class AbrAlg:
@@ -17,6 +14,9 @@ class AbrAlg:
     self.vid = vid
     self.obj = obj
     self.args = parser.parse_args(cmdline_args)
+
+    self._prev_download_rates = []
+    self._past_n_throughput_vals = self.args.past_n_throughput_vals
 
   ########### Args #####################
   # - 'chunk_index': the index of the chunk to be fetched next, starting at 0.
@@ -40,12 +40,34 @@ class AbrAlg:
   # bitrate you want to fetch for the next chunk. For example, a return value
   # of 0 indicates that the lowest quality chunk should be fetched next, while
   # len(vid.get_bitrates()) - 1 indicates the highest quality.
+
   def next_quality(self, chunk_index, rebuffer_sec, download_rate_kbps,
                    buffer_sec):
+    """
+      Simple algorithm that looks at the mean of the past 5 throughput samples
+      and picks a quality whose bitrate is lower than this estimate.
+      It does *not* take the current buffer levels as its input.
+    """
 
-    quality = 0
-    # TODO: Change the quality to the quality of the bitrate that you want
-    # to fetch next.
+    if download_rate_kbps is None:
+      # First chunk case -> we have no estimate.
+      # Simply, use a default quality
+      quality = 0
+    else:
+      # Consider only the latest self._past_n_throughput_vals
+      if len(self._prev_download_rates) == self._past_n_throughput_vals:
+        self._prev_download_rates = self._prev_download_rates[1:]
+
+      self._prev_download_rates.append(download_rate_kbps)
+      mean_rate = np.mean(self._prev_download_rates)
+      bitrates = self.vid.get_bitrates()
+
+      # Pick the maximum bitrate that is lower than the mean_rate
+      for br in sorted(bitrates, reverse=True):
+        if br <= mean_rate:
+          break
+
+      quality = bitrates.index(br)
 
     assert quality >= 0 and quality < len(self.vid.get_bitrates())
     return quality

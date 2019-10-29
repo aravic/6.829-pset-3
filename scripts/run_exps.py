@@ -1,5 +1,6 @@
 import numpy as np
 from multiprocessing.pool import ThreadPool
+import threading
 import random
 import argparse
 import os
@@ -17,14 +18,34 @@ parser.add_argument('--seed', type=int, default=42)
 parser.add_argument('-n', '--name', type=str, required=True)
 parser.add_argument('--results_dir', type=str, default='results/')
 parser.add_argument('--dry_run', action='store_true')
-args = parser.parse_args()
+
+parser.add_argument('--rb', action='store_true')
+# INSTRUCTOR ONLY ARGS
+parser.add_argument('--mpc', action='store_true')
+parser.add_argument('--bb', action='store_true')
+
+
+def parse_args():
+  argv = sys.argv[1:]
+  if '--' in argv:
+    remaining_args = argv[argv.index('--') + 1:]
+    argv = argv[:argv.index('--')]
+  else:
+    remaining_args = []
+  args = parser.parse_args(argv)
+  return args, remaining_args
+
+
+# pass remaining_args to user abr.
+args, remaining_args = parse_args()
 
 TRACE_DIR = 'network/traces/'
 
 
-def subprocess_cmd(command):
+def subprocess_cmd(command, lock=threading.Lock()):
   if args.dry_run:
-    print(command)
+    with lock:
+      print(command)
     return None
   else:
     process = subprocess.Popen(command,
@@ -41,8 +62,14 @@ def get_length(trace):
 
 
 def cmd_gen(trace, start_index, results_dir):
-  return 'python sim/run_exp.py -- --mm-trace=%s --results-dir=%s --mm-start-idx=%d' % (
-      trace, results_dir, start_index)
+  additional_args = ''
+  if args.mpc:
+    additional_args += ' --mpc'
+  elif args.bb:
+    additional_args += ' --bb'
+  return 'python sim/run_exp.py -- --mm-trace=%s --results-dir=%s --mm-start-idx=%d %s -- %s' % (
+      trace, results_dir, start_index, additional_args,
+      ' '.join(remaining_args))
 
 
 def run_in_threadpool(f, args):
@@ -66,26 +93,25 @@ def main():
     np.random.shuffle(traces)
     while len(traces) < n_runs:
       traces.append(np.random.choice(traces))
-
     traces = traces[:n_runs]
 
-    lens = run_in_threadpool(get_length, traces)
-
-    # sample pointer from the first three-quarters of the trace.
-    start_indices = [int(l * np.random.random() * .75) for l in lens]
-    sample_throughputs = np.random.uniform(.3, 4, len(lens))
+    # rescale the throughputs.
+    sample_throughputs = np.random.uniform(.3, 4, n_runs)
     rescaled_traces = []
-
     os.system('mkdir -p /tmp/rescaled_traces/%s/' % mode)
-    for trace, thr, start_index in zip(traces, sample_throughputs,
-                                       start_indices):
-      rescaled_trace = '/tmp/rescaled_traces/%s/thr_%.2f_index_%d_%s' % (
-          mode, thr, start_index, os.path.basename(trace))
+    for trace, thr in zip(traces, sample_throughputs):
+      rescaled_trace = '/tmp/rescaled_traces/%s/thr_%.2f_%s' % (
+          mode, thr, os.path.basename(trace))
       network.trace_with_target(trace, rescaled_trace, thr)
       rescaled_traces.append(rescaled_trace)
-    del traces
 
-    for trace, start_index in zip(rescaled_traces, start_indices):
+    traces = rescaled_traces
+
+    lens = run_in_threadpool(get_length, traces)
+    # sample pointer from the first three-quarters of the trace.
+    start_indices = [int(l * np.random.random() * .75) for l in lens]
+
+    for trace, start_index in zip(traces, start_indices):
       cmd = cmd_gen(
           trace, start_index,
           os.path.join(args.results_dir, args.name, mode,

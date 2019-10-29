@@ -76,10 +76,12 @@ class Video(object):
 
   def get_all_chunk_sizes(self):
     lchunks = len(self.chunks)
-    chunks_expanded = np.repeat(self.chunks,
-                                self.max_video_chunks / lchunks,
-                                axis=0)
-    return chunks_expanded[0:self.max_video_chunks]
+    chunk_sizes = []
+    i = 0
+    while len(chunk_sizes) < len(self.chunks):
+      chunk_sizes.append(self.chunks[i % len(self.chunks)])
+      i += 1
+    return chunk_sizes
 
   # Return the bitrates for chunk i (0-indexed), in an array of descending
   # bitrates. Sizes are in Mb.

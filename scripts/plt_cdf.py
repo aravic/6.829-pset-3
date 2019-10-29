@@ -1,3 +1,4 @@
+import numpy as np
 import json
 import os
 import sys
@@ -19,7 +20,7 @@ OUT_DIR = 'cdfs'
 def plot_cdf(ax, vals, label=''):
   x = sorted(vals)
   y = [i / float(len(vals)) for i in range(len(vals))]
-  ax.plot(x, y, label=label)
+  ax.plot(x, y, label=label + '(Avg: %.2f)' % np.mean(x))
   ax.legend()
 
 
