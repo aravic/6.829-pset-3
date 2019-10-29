@@ -1,6 +1,9 @@
-sudo apt-get update && sudo apt-get upgrade -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get update
+sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+
 sudo apt-get install -y python-pip
-sudo pip install numpy absl-py python-tk matplotlib
+sudo pip install numpy absl-py matplotlib
+
 sudo apt-get install -y xfce4 virtualbox-guest-dkms virtualbox-guest-utils virtualbox-guest-x11
 
 # Download the traces using the following lines of code.
