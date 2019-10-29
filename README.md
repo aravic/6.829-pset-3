@@ -88,7 +88,7 @@ We expose a video object to your abr algorithm (see `your_code/video.py`) for yo
 
 ### Traces
 We've provided you with few sample traces in `network/traces/cellular` folder for you to run simple experiments with your ABR algorithm.
-We've also provided a much larger set of traces which we call for you to do a more thorough evaluation.
+We've also provided a much larger set of traces for a more thorough evaluation.
 All of these traces will be downloaded and placed in the right folders in the setup phase after you've run `install.sh`.
 If you think this didn't happen for you then look for the commands that download these traces towards the end of `install.sh`
 
@@ -200,7 +200,7 @@ After the final submission deadline, we will run all submissions on heldout trac
 
 ## Rough Grading Scheme
 
-Please note that the leaderboard is provided so that you can compare the performance of your algorithm against others. It will be given a very **little** weightage when calculating your grade.
+Please note that the leaderboard is provided so that you can compare the performance of your algorithm against others. It will be given very **little** weightage when calculating your grade.
 What is far more important is your write-up.
 A large portion of the grade is assigned to the design and the choice of the algorithm that you've used.
 Please indicate your rationale that went into your ABR algorithm. Include a brief report of all the ideas that you've tried.
