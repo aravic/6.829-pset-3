@@ -6,8 +6,7 @@ import os
 import sys
 
 import numpy as np
-sys.path.append('../abr/')
-sys.path.append('../')
+sys.path.append('./')
 from your_code import abr, objective, video
 from absl import app
 from sim import network
@@ -19,7 +18,7 @@ KILO = 1000.0
 BITS_IN_BYTE = 8
 CHUNK_DUR = 4.0
 
-parser = argparse.ArgumentParser("Environment")
+parser = argparse.ArgumentParser("Run experiment using Simulator")
 parser.add_argument("--video",
                     type=str,
                     default='real/data/videos/BigBuckBunny/trace.dat',
@@ -160,8 +159,8 @@ def main(argv):
               f,
               indent=4,
               sort_keys=True)
-  generate_plts(args.results_dir, env.get_qoes(), buff_lens, ttds,
-                args.mm_trace, args.mm_start_idx)
+  generate_plts(args.results_dir, env.get_bitrates(), env.get_qoes(),
+                buff_lens, ttds, args.mm_trace, args.mm_start_idx)
 
 
 if __name__ == '__main__':

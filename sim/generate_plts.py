@@ -44,7 +44,7 @@ def qoe_plot(result_dir, qoes):
   plt.savefig(os.path.join(result_dir, 'qoe_plot.png'))
 
 
-def buffer_plot(result_dir, buffer_lengths, ttds, delta=0.1):
+def buffer_plot(ax, buffer_lengths, ttds, delta=0.1):
   """
     Args:
       buffer_lengths: List[float] len == T + 1
@@ -66,16 +66,12 @@ def buffer_plot(result_dir, buffer_lengths, ttds, delta=0.1):
     prev_buf = buf
     cur_t += ttd
 
-  fig = plt.figure()
-  plt.plot(ts, ys)
-  plt.xlabel('time (sec)')
-  plt.ylabel('Buffer Length (sec)')
-
-  plt.tight_layout()
-  plt.savefig(os.path.join(result_dir, 'buffer_length.png'))
+  ax.plot(ts, ys)
+  ax.set_xlabel('time (sec)')
+  ax.set_ylabel('Buffer Length (sec)')
 
 
-def plt_mahimahi_bw(result_dir, trace_file, start_idx, total_time, N=10):
+def plt_mahimahi_bw(ax, trace_file, start_idx, total_time, N=10):
 
   trace = []
   with open(trace_file, 'r') as f:
@@ -132,18 +128,45 @@ def plt_mahimahi_bw(result_dir, trace_file, start_idx, total_time, N=10):
   x_mean = running_mean(x, N)[::N]
   y_mean = running_mean(y, N)[::N]
 
-  plt.figure()
-  plt.plot(x_mean,
-           y_mean,
-           label='Throughput (Mean: %.3f Mbps)' % np.mean(y_mean))
-  plt.xlabel('Time (sec)')
-  plt.ylabel('link Capacity (Mbps)')
-  plt.legend()
-  plt.savefig(os.path.join(result_dir, 'link_capacity.png'))
+  ax.plot(x_mean,
+          y_mean,
+          label='Throughput (Mean: %.3f Mbps)' % np.mean(y_mean))
+  ax.set_xlabel('Time (sec)')
+  ax.set_ylabel('link Capacity (Mbps)')
+  ax.legend()
 
 
-def generate_plts(result_dir, qoes, buffer_lengths, ttds, trace_file,
+def plt_bitrates(ax, bitrates, ttds):
+  xs = []
+  ys = []
+  prev_time = 0
+  for br, ttd in zip(bitrates, ttds):
+    xs.append(prev_time)
+    ys.append(br)
+
+    xs.append(prev_time + ttd)
+    ys.append(br)
+    prev_time += ttd
+
+  ax.plot(xs, ys)
+  ax.set_xlabel('Time (sec)')
+  ax.set_ylabel('Bitrate (Kbps)')
+
+
+def plt_trio(result_dir, bitrates, buffer_lengths, ttds, trace_file,
+             start_idx):
+  """Plots bitrate, buffer and mahimahi throughput vertically in a single plot."""
+
+  f, axarr = plt.subplots(3, 1)
+  plt_bitrates(axarr[0], bitrates, ttds)
+  buffer_plot(axarr[1], buffer_lengths, ttds)
+  plt_mahimahi_bw(axarr[2], trace_file, start_idx, sum(ttds))
+
+  plt.tight_layout()
+  plt.savefig(os.path.join(result_dir, 'buffer-bitrate-throughput.png'))
+
+
+def generate_plts(result_dir, bitrates, qoes, buffer_lengths, ttds, trace_file,
                   start_idx):
   qoe_plot(result_dir, qoes)
-  buffer_plot(result_dir, buffer_lengths, ttds)
-  plt_mahimahi_bw(result_dir, trace_file, start_idx, sum(ttds))
+  plt_trio(result_dir, bitrates, buffer_lengths, ttds, trace_file, start_idx)

@@ -4,12 +4,10 @@ import SocketServer
 import sys
 import os
 import json
-import ssl
-import video
 import argparse
 import copy
-import objective
-import abr
+sys.path.append('../')
+from your_code import abr, objective, video
 
 MILLI = 1000.0
 
@@ -39,7 +37,26 @@ parser.add_argument("--qoe-log",
                     type=str,
                     default="",
                     help="Where to log the ABR QoE scores")
-args = parser.parse_args()
+
+parser.add_argument('--rb', action='store_true')
+
+# DO NOT USE THE FOLLOWING ARGUMENTS
+# INSTRUCTOR ONLY ARGS
+parser.add_argument('--mpc', action='store_true')
+parser.add_argument('--bb', action='store_true')
+
+
+def parse_args(argv):
+  if '--' in argv:
+    remaining_args = argv[argv.index('--') + 1:]
+    argv = argv[:argv.index('--')]
+  else:
+    remaining_args = []
+  args = parser.parse_args(argv)
+  return args, remaining_args
+
+
+args, remaining_args = parse_args(sys.argv[1:])
 
 
 def make_request_handler(params):
@@ -182,7 +199,19 @@ def run(server_class=HTTPServer, port=8333):
   # modified.
   obj_client = copy.deepcopy(obj)
   vid_client = copy.deepcopy(vid)
-  abr_alg = abr.AbrAlg(vid_client, obj_client)
+
+  if args.mpc:
+    from mpc.mpc import AbrAlg
+    abr_alg_fn = AbrAlg
+  elif args.bb:
+    from bb.bb import AbrAlg
+    abr_alg_fn = AbrAlg
+  elif args.rb:
+    from your_code.rb import AbrAlg
+    abr_alg_fn = AbrAlg
+  else:
+    abr_alg_fn = abr.AbrAlg
+  abr_alg = abr_alg_fn(vid_client, obj_client)
 
   qoelog = open(args.qoe_log, 'w') if len(args.qoe_log) > 0 else sys.stdout
 

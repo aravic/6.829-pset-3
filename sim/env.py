@@ -91,6 +91,9 @@ class Env:
   def get_total_qoe(self):
     return self.total_qoe
 
+  def get_bitrates(self):
+    return [self.vid.quality_to_bitrate(cs.quality) for cs in self.chunk_stats]
+
   def get_avg_down_rate_kbps(self):
     l = [cs.get_download_rate_kbps() for cs in self.chunk_stats]
     return np.mean(l)
