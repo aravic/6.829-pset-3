@@ -193,8 +193,11 @@ The second part of problem 2 asks you to come up with your own algorithm, your g
 
 To submit to the leaderboard, run:
 ```
-Coming soon.....
+python scripts/leaderboard.py --results_dir res_batch/ --team test --run --upload
 ```
+
+This will run the experiment and upload the results.
+
 After the final submission deadline, we will run all submissions on heldout traces that are not available to you
 (to discourage overfitting to the provided traces). Your grade on this part of the problem set will be from this final run.
 

@@ -17,7 +17,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         print(self)
-        if self.path == '/leaderboard' or self.path == '/':
+        if self.path == '/leaderboard' or self.path == '/' or self.path == '':
             self.leaderboard()
         elif self.path.split('/')[1] == 'images':
             self.images()
@@ -43,7 +43,7 @@ class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
     def leaderboard(self):
         # Sort the scores
         sorted = [(scores[x][0], x) for x in scores]
-        sorted.sort(key=lambda x: x[0])
+        sorted.sort(key=lambda x: x[0], reverse=True)
 
         # Prepare HTML for the list
         html_list = ""
