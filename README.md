@@ -191,9 +191,15 @@ The second part of problem 2 asks you to come up with your own algorithm, your g
 1. Your leaderboard rank has **very little** weightage for your grade
 2. The leaderboard server will execute your code locally. It will show the results produced in your local development environment. We therefore ask that you act in good faith and don't modify the submission code.
 
-To submit to the leaderboard, run:
+To submit to the leaderboard, first register your team as follows.
+
 ```
-python scripts/leaderboard.py --results_dir res_batch/ --team test --run --upload
+python scripts/register.py teamname 'name1 (email1@mit.edu)' 'name2 (email2@mit.edu)'
+```
+
+Then, to submit new scores run:
+```
+python scripts/leaderboard.py --results_dir res_batch/ --team teamname --run --upload
 ```
 
 This will run the experiment and upload the results.
