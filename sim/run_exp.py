@@ -50,8 +50,8 @@ logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 parser.add_argument('--rb', action='store_true')
 # INSTRUCTOR ONLY ARGS
-parser.add_argument('--mpc', action='store_true')
-parser.add_argument('--bb', action='store_true')
+parser.add_argument('--instructor-mpc', action='store_true')
+parser.add_argument('--instructor-bb', action='store_true')
 
 
 def parse_args(argv):
@@ -87,10 +87,10 @@ def main(argv):
   obj_client = copy.deepcopy(obj)
   vid_client = copy.deepcopy(vid)
 
-  if args.mpc:
+  if args.instructor_mpc:
     from mpc.mpc import AbrAlg
     abr_alg_fn = AbrAlg
-  elif args.bb:
+  elif args.instructor_bb:
     from bb.bb import AbrAlg
     abr_alg_fn = AbrAlg
   elif args.rb:
