@@ -21,8 +21,8 @@ parser.add_argument('--dry_run', action='store_true')
 
 parser.add_argument('--rb', action='store_true')
 # INSTRUCTOR ONLY ARGS
-parser.add_argument('--mpc', action='store_true')
-parser.add_argument('--bb', action='store_true')
+parser.add_argument('--instructor-mpc', action='store_true')
+parser.add_argument('--instructor-bb', action='store_true')
 
 
 def parse_args():
@@ -63,10 +63,10 @@ def get_length(trace):
 
 def cmd_gen(trace, start_index, results_dir):
   additional_args = ''
-  if args.mpc:
-    additional_args += ' --mpc'
-  elif args.bb:
-    additional_args += ' --bb'
+  if args.instructor_mpc:
+    additional_args += ' --instructor-mpc'
+  elif args.instructor_bb:
+    additional_args += ' --instructor-bb'
   return 'python sim/run_exp.py -- --mm-trace=%s --results-dir=%s --mm-start-idx=%d %s -- %s' % (
       trace, results_dir, start_index, additional_args,
       ' '.join(remaining_args))
