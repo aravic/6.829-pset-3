@@ -4,9 +4,12 @@
 # video should be fetched.
 import argparse
 parser = argparse.ArgumentParser()
-# TODO: Add the required command line arguments to your abr algorithm here.
-# See below for an example
+# TODO: Add the required command line arguments to your abr algorithm here (if needed).
+# See below for an example. You can specify values for the arguments added here by passing
+# them after a *second* '--' delimiter. Example invokation:
+# python sim/run_exp.py -- --mm-trace=network/traces/cellular/Verizon1.dat -- --param1=2
 parser.add_argument('--param1', type=float, default=1)
+
 
 
 class AbrAlg:
