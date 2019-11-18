@@ -1,4 +1,5 @@
 import copy
+
 import numpy as np
 from network import Network
 
@@ -58,7 +59,16 @@ class Env:
 
     ttd = self.net.ttd(chunk_size_bytes)
 
-    download_rate_kbps = chunk_size_bytes / ttd * BITS_IN_BYTE / KILO
+    if ttd == 0:
+      # because of the nature of mahimahi simulation sometime we can have
+      # instantaneous bursts and if abr chooses low bitrates then a chunk
+      # can be downloaded in a single burst resulting in ttd = 0
+      # This is rare but if it happens instead of leading to a ZeroDivisionError
+      # we give a high download_rate instead.
+      download_rate_kbps = 100 * 1000  # 100 Mbps
+      ttd = chunk_size_bytes / download_rate_kbps * BITS_IN_BYTE / KILO
+    else:
+      download_rate_kbps = chunk_size_bytes / ttd * BITS_IN_BYTE / KILO
 
     rebuf_sec = max(0, ttd - self.buffer)
 
